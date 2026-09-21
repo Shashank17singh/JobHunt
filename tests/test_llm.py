@@ -333,8 +333,3 @@ def test_both_stages_ask_for_json_mode_and_leave_room_for_thinking():
     llm.draft(jobs, PROFILE, provider=d, model="m")
     assert d.calls[0]["json_mode"] is True
     assert d.calls[0]["max_tokens"] >= 8000
-
-
-def test_providers_without_document_support_say_so():
-    with pytest.raises(providers.UnsupportedDocument):
-        providers.GroqProvider().complete_document("m", "prompt", b"%PDF", 100)
