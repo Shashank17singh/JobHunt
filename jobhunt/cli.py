@@ -46,7 +46,7 @@ def _load_profile(cfg: dict, allow_sample: bool) -> dict | None:
     sample = ROOT / "profile.example.json"
     if allow_sample and sample.exists():
         print(f"  ! {path} missing — using {sample.name} for this dry run.")
-        print("    Build the real one: python -m jobhunt profile --resume resume.pdf")
+        print("    Build the real one: python -m jobhunt profile --resume JobHunt_Resume.tex")
         return json.loads(sample.read_text(encoding="utf-8"))
 
     print(f"missing {path} — run `python -m jobhunt profile --resume <file>` first")
@@ -218,7 +218,7 @@ def main(argv=None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sp = sub.add_parser("profile", help="turn a resume into profile.json")
-    sp.add_argument("--resume", required=True, help="path to a .pdf, .txt or .md resume")
+    sp.add_argument("--resume", required=True, help="path to a .tex, .txt or .md resume")
     sp.add_argument("--out", default="profile.json")
     sp.set_defaults(func=cmd_profile)
 
