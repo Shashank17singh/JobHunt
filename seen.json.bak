@@ -1,0 +1,122 @@
+{
+  "greenhouse:groww:4956817101": {
+    "first_seen": "2026-09-21T21:41:23+00:00",
+    "company": "Groww",
+    "title": "Video Editor Intern",
+    "location": "Bengaluru-VTP, India",
+    "url": "https://job-boards.eu.greenhouse.io/groww/jobs/4956817101",
+    "score": 0.0,
+    "reason": "Wrong role category, candidate is an engineering and AI student unsuited for a video editing internship.",
+    "emailed": true,
+    "applied": false,
+    "applied_on": null
+  },
+  "lever:zeta:dad16204-8051-4517-9e50-966f329045b5": {
+    "first_seen": "2026-09-21T21:41:23+00:00",
+    "company": "Zeta",
+    "title": "Cloud Network Engineer II",
+    "location": "Hyderabad",
+    "url": "https://jobs.lever.co/zeta/dad16204-8051-4517-9e50-966f329045b5",
+    "score": 3.0,
+    "reason": "Seniority mismatch, this is a mid-level Engineer II role requiring professional experience beyond an undergraduate.",
+    "emailed": true,
+    "applied": false,
+    "applied_on": null
+  },
+  "ashby:certa:b11ff3f4-b175-426a-a05a-f1b687cd5eda": {
+    "first_seen": "2026-09-21T21:41:23+00:00",
+    "company": "Certa",
+    "title": "Software Development Engineer in Test - SDET",
+    "location": "India",
+    "url": "https://jobs.ashbyhq.com/certa/b11ff3f4-b175-426a-a05a-f1b687cd5eda",
+    "score": 3.0,
+    "reason": "Seniority mismatch for an SDET II role requiring mentorship experience and test infrastructure ownership.",
+    "emailed": true,
+    "applied": false,
+    "applied_on": null
+  },
+  "ashby:aistudio:b4a4f30b-ea11-41c7-bb46-9984165d768b": {
+    "first_seen": "2026-09-21T21:41:23+00:00",
+    "company": "AiStudio",
+    "title": "Forward Deployed Engineer Intern",
+    "location": "India-Remote",
+    "url": "https://jobs.ashbyhq.com/aistudio/b4a4f30b-ea11-41c7-bb46-9984165d768b",
+    "score": 9.0,
+    "reason": "Strong match for an AI engineering internship given candidate's robust Python, LLM, and production projects.",
+    "emailed": true,
+    "applied": false,
+    "applied_on": null
+  },
+  "greenhouse:abnormalsecurity:7995019003": {
+    "first_seen": "2026-09-21T21:41:23+00:00",
+    "company": "Abnormal Security",
+    "title": "Machine Learning Engineer II - Behavioral Security Products",
+    "location": "Remote - UK",
+    "url": "https://abnormal.ai/careers/jobs/7995019003?gh_jid=7995019003",
+    "score": 3.0,
+    "reason": "Wrong seniority, this is a Machine Learning Engineer II role requiring industry experience.",
+    "emailed": true,
+    "applied": false,
+    "applied_on": null
+  },
+  "greenhouse:abnormalsecurity:7816935003": {
+    "first_seen": "2026-09-21T21:41:23+00:00",
+    "company": "Abnormal Security",
+    "title": "Machine Learning Engineer I - Message Security Products",
+    "location": "Remote - Singapore",
+    "url": "https://abnormal.ai/careers/jobs/7816935003?gh_jid=7816935003",
+    "score": 3.0,
+    "reason": "Wrong seniority, MLE I positions typically require a degree completion or professional ML experience.",
+    "emailed": true,
+    "applied": false,
+    "applied_on": null
+  },
+  "greenhouse:abnormalsecurity:7816911003": {
+    "first_seen": "2026-09-21T21:41:23+00:00",
+    "company": "Abnormal Security",
+    "title": "Software Engineer 2 - Abnormal Data Platform",
+    "location": "Hybrid - Bangalore, India",
+    "url": "https://abnormal.ai/careers/jobs/7816911003?gh_jid=7816911003",
+    "score": 3.0,
+    "reason": "Seniority mismatch, Software Engineer II is a mid-level role requiring professional backend experience.",
+    "emailed": true,
+    "applied": false,
+    "applied_on": null
+  },
+  "greenhouse:abnormalsecurity:7995761003": {
+    "first_seen": "2026-09-21T21:41:23+00:00",
+    "company": "Abnormal Security",
+    "title": "Software Engineer 2 - AI Transformation Engineering",
+    "location": "Hybrid - Bangalore, India",
+    "url": "https://abnormal.ai/careers/jobs/7995761003?gh_jid=7995761003",
+    "score": 3.0,
+    "reason": "Seniority mismatch, Software Engineer II requires several years of industry software engineering experience.",
+    "emailed": true,
+    "applied": false,
+    "applied_on": null
+  },
+  "greenhouse:abnormalsecurity:7995027003": {
+    "first_seen": "2026-09-21T21:41:23+00:00",
+    "company": "Abnormal Security",
+    "title": "Software Engineer - Backend - Behavioral Security Products",
+    "location": "Remote - UK",
+    "url": "https://abnormal.ai/careers/jobs/7995027003?gh_jid=7995027003",
+    "score": 3.0,
+    "reason": "Role is remote in the UK, but candidate is located in India and graduating in 2027.",
+    "emailed": true,
+    "applied": false,
+    "applied_on": null
+  },
+  "greenhouse:abnormalsecurity:7774637003": {
+    "first_seen": "2026-09-21T21:41:23+00:00",
+    "company": "Abnormal Security",
+    "title": "Software Engineer II - ADEX",
+    "location": "Hybrid - Bangalore, India",
+    "url": "https://abnormal.ai/careers/jobs/7774637003?gh_jid=7774637003",
+    "score": 4.0,
+    "reason": "Software Engineer II requires professional industry experience beyond an undergraduate student graduating in 2027.",
+    "emailed": true,
+    "applied": false,
+    "applied_on": null
+  }
+}

@@ -1,0 +1,92 @@
+# jobhunt configuration. Everything tunable lives here — no editing Python.
+#
+# Tune `filters` first. It is deterministic, free, and it is what keeps the
+# LLM bill small: roughly 2000 raw postings -> 40 candidates before a single
+# token is spent.
+
+filters:
+  # Title regexes, matched case-insensitively against the job title only.
+  # A title must match at least one include AND zero excludes.
+  #
+  # Gotcha: "sde" as a bare regex does NOT match "Software Development
+  # Engineer" — different words entirely. Use \bsde\b for the acronym and
+  # list the spelled-out variants separately, as below.
+
+  include_titles:
+    # --- Software / Backend / Systems Engineering ---
+    - '\b(software|backend|back-end|server|platform|infrastructure|infra|systems|distributed|cloud)\b.*\bengineer\b'
+    - '\bengineer\b.*\b(backend|back-end|platform|infrastructure|infra|systems|distributed)\b'
+    - '\bsde\b'
+    - '\bsde\s*-?\s*(i{1,3}|[123])\b'
+    - 'software development engineer'
+    - 'software engineer'
+    - 'site reliability engineer'
+    - '\bsre\b'
+    - 'member of technical staff'
+    # --- Systems / Networking track (DPI Engine, VectorDB background) ---
+    - '\bnetwork(ing)?\s+(software\s+)?engineer\b'
+    - '\b(kernel|embedded|firmware|driver|packet|dataplane|data plane)\b.*\bengineer\b'
+    - '\bengineer\b.*\b(kernel|packet|dataplane|networking|performance)\b'
+    - '\bperformance engineer\b'
+    - '\bsystems engineer\b'
+    - '\bc\+\+\b.*\bengineer\b'
+    - '\bengineer\b.*\bc\+\+\b'
+    # --- Python / Data Science / ML track (NIELIT training, AWS ML cert) ---
+    - '\bpython\b.*\b(developer|engineer)\b'
+    - '\b(developer|engineer)\b.*\bpython\b'
+    - '\bdata\s+(scientist|analyst|engineer)\b'
+    - '\bmachine\s+learning\b.*\b(engineer|developer)\b'
+    - '\b(ml|ai)\b.*\b(engineer|developer)\b'
+    - '\bengineer\b.*\b(ml|ai|machine learning)\b'
+    - '\bdata\s+science\b'
+    # --- Intern-specific patterns ---
+    - '\bintern\b'
+    - '\btrainee\b'
+    - '\bapprentice\b'
+
+  # Anything matching these is dropped even if an include matched.
+  exclude_titles:
+    - '\b(staff|principal|distinguished|fellow|architect)\b'      # too senior
+    - '\bsenior\b'
+    - '\b(director|vp|vice president|head of|chief|cto)\b'
+    - '\b(manager|management)\b'
+    - '\b(sales|account executive|marketing|recruit|support|success)\b'
+    - '\b(frontend|front-end|ios|android|mobile|game|designer)\b' # wrong discipline
+    # Note: data scientist / ML scientist are NOT excluded — they match
+    # Shashank's ML/DS training, certifications, and NIELIT capstone.
+
+  # Substrings matched against "<location> <title>", case-insensitive.
+  # Leave empty to accept every location.
+  locations:
+    - bangalore
+    - bengaluru
+    - hyderabad
+    - gurugram
+    - noida
+    - mumbai
+    - delhi
+    - lucknow
+    - kolkata
+    - pune
+    - india
+
+  # If true, anything reading as remote passes the location gate.
+  allow_remote: true
+
+  # Drop postings older than this. Set to null to disable.
+  # Boards often re-stamp `updated_at`, so this is a soft signal, not a promise.
+  max_age_days: 30
+
+# --- LLM stages -------------------------------------------------------------
+screen_batch_size: 8      # jobs per screening call. Higher = cheaper, sloppier.
+screen_jd_chars: 1400     # JD truncation for screening
+draft_jd_chars: 6000      # JD truncation for drafting
+score_threshold: 7.0      # below this, no draft and no digest slot
+max_per_digest: 5         # hard cap on expensive draft calls per run
+
+# --- paths ------------------------------------------------------------------
+companies_file: companies.yaml
+profile_file: profile.json
+seen_file: seen.json
+digest_file: out/digest.html
+tracker_csv: out/tracker.csv

@@ -1,0 +1,118 @@
+# Boards to poll. One entry per company.
+#
+#   ats:   greenhouse | lever | ashby
+#   slug:  the company's board identifier (NOT its domain)
+#   name:  whatever you want to see in the digest
+#
+# A dead slug is not fatal: fetch_board prints the HTTP status and returns [],
+# so one bad entry never takes down the run. Watch the per-board job counts on
+# stdout — a board reporting 0 jobs every day is a slug that needs fixing.
+
+companies:
+# --- India-first companies ---
+- {ats: greenhouse, slug: razorpaysoftwareprivatelimited, name: Razorpay}
+- {ats: greenhouse, slug: groww, name: Groww}
+- {ats: greenhouse, slug: slice, name: Slice}
+- {ats: lever, slug: zeta, name: Zeta}
+- {ats: lever, slug: meesho, name: Meesho}
+- {ats: ashby, slug: sarvam, name: Sarvam AI}
+- {ats: ashby, slug: certa, name: Certa}
+- {ats: ashby, slug: aistudio, name: AiStudio}
+- {ats: lever, slug: getwingapp, name: Wing Assistant}
+
+# --- Global companies with India offices ---
+- {ats: greenhouse, slug: abnormalsecurity, name: Abnormal Security}
+- {ats: greenhouse, slug: bitwarden, name: Bitwarden}
+- {ats: greenhouse, slug: coinbase, name: Coinbase}
+- {ats: ashby, slug: notion, name: Notion}
+- {ats: ashby, slug: collinear-ai, name: Collinear AI}
+- {ats: ashby, slug: ramp, name: Ramp}
+- {ats: lever, slug: drivetrain, name: Drivetrain}
+- {ats: lever, slug: merklescience, name: Merkle Science}
+
+# --- Extended Global Tech / AI / Unicorns ---
+- {ats: greenhouse, slug: stripe, name: Stripe}
+- {ats: greenhouse, slug: openai, name: OpenAI}
+- {ats: lever, slug: anthropic, name: Anthropic}
+- {ats: greenhouse, slug: github, name: GitHub}
+- {ats: lever, slug: figma, name: Figma}
+- {ats: lever, slug: retool, name: Retool}
+- {ats: greenhouse, slug: discord, name: Discord}
+- {ats: greenhouse, slug: pinterest, name: Pinterest}
+- {ats: greenhouse, slug: reddit, name: Reddit}
+- {ats: greenhouse, slug: robinhood, name: Robinhood}
+- {ats: greenhouse, slug: databricks, name: Databricks}
+- {ats: greenhouse, slug: snowflake, name: Snowflake}
+- {ats: lever, slug: plaid, name: Plaid}
+- {ats: lever, slug: scaleai, name: Scale AI}
+- {ats: greenhouse, slug: canva, name: Canva}
+- {ats: greenhouse, slug: affirm, name: Affirm}
+- {ats: greenhouse, slug: flexport, name: Flexport}
+- {ats: lever, slug: lyft, name: Lyft}
+- {ats: lever, slug: yelp, name: Yelp}
+- {ats: greenhouse, slug: doordash, name: DoorDash}
+- {ats: greenhouse, slug: instacart, name: Instacart}
+- {ats: lever, slug: twitch, name: Twitch}
+- {ats: greenhouse, slug: epicgames, name: Epic Games}
+- {ats: lever, slug: atlassian, name: Atlassian}
+- {ats: lever, slug: coursera, name: Coursera}
+- {ats: lever, slug: udemy, name: Udemy}
+- {ats: lever, slug: duolingo, name: Duolingo}
+- {ats: greenhouse, slug: grammarly, name: Grammarly}
+- {ats: greenhouse, slug: dropbox, name: Dropbox}
+- {ats: greenhouse, slug: box, name: Box}
+- {ats: greenhouse, slug: hashicorp, name: HashiCorp}
+- {ats: greenhouse, slug: gitlab, name: GitLab}
+- {ats: greenhouse, slug: cloudflare, name: Cloudflare}
+- {ats: lever, slug: okta, name: Okta}
+- {ats: lever, slug: auth0, name: Auth0}
+- {ats: greenhouse, slug: rubrik, name: Rubrik}
+- {ats: lever, slug: zscaler, name: Zscaler}
+- {ats: lever, slug: paloaltonetworks, name: Palo Alto Networks}
+- {ats: lever, slug: mongodb, name: MongoDB}
+- {ats: lever, slug: redis, name: Redis}
+- {ats: greenhouse, slug: confluent, name: Confluent}
+- {ats: greenhouse, slug: datastax, name: DataStax}
+- {ats: greenhouse, slug: cohere, name: Cohere}
+- {ats: lever, slug: huggingface, name: Hugging Face}
+- {ats: greenhouse, slug: wandb, name: Weights & Biases}
+- {ats: lever, slug: weaviate, name: Weaviate}
+- {ats: lever, slug: pinecone, name: Pinecone}
+- {ats: greenhouse, slug: roscale, name: Scale AI}
+- {ats: greenhouse, slug: glean, name: Glean}
+- {ats: lever, slug: perplexity, name: Perplexity}
+- {ats: ashby, slug: midjourney, name: Midjourney}
+- {ats: greenhouse, slug: anduril, name: Anduril}
+- {ats: lever, slug: palantir, name: Palantir}
+- {ats: lever, slug: samsara, name: Samsara}
+- {ats: greenhouse, slug: nuro, name: Nuro}
+- {ats: greenhouse, slug: cruise, name: Cruise}
+- {ats: lever, slug: waymo, name: Waymo}
+- {ats: greenhouse, slug: zoox, name: Zoox}
+- {ats: lever, slug: aurora, name: Aurora}
+- {ats: greenhouse, slug: lucidmotors, name: Lucid Motors}
+- {ats: lever, slug: rivian, name: Rivian}
+- {ats: greenhouse, slug: spacex, name: SpaceX}
+- {ats: lever, slug: relativityspace, name: Relativity Space}
+- {ats: greenhouse, slug: astranis, name: Astranis}
+- {ats: greenhouse, slug: varda, name: Varda}
+- {ats: lever, slug: benchling, name: Benchling}
+- {ats: greenhouse, slug: tempus, name: Tempus}
+- {ats: lever, slug: color, name: Color}
+- {ats: lever, slug: 23andme, name: 23andMe}
+- {ats: lever, slug: springhealth, name: Spring Health}
+- {ats: greenhouse, slug: lyrahealth, name: Lyra Health}
+- {ats: greenhouse, slug: oscarhealth, name: Oscar Health}
+- {ats: lever, slug: gusto, name: Gusto}
+- {ats: lever, slug: rippling, name: Rippling}
+- {ats: lever, slug: deel, name: Deel}
+- {ats: greenhouse, slug: remote, name: Remote}
+- {ats: lever, slug: lattice, name: Lattice}
+- {ats: lever, slug: brex, name: Brex}
+- {ats: greenhouse, slug: plaid, name: Plaid}
+- {ats: greenhouse, slug: chime, name: Chime}
+- {ats: lever, slug: carta, name: Carta}
+- {ats: lever, slug: klarna, name: Klarna}
+- {ats: greenhouse, slug: checkout, name: Checkout.com}
+- {ats: lever, slug: adyen, name: Adyen}
+- {ats: greenhouse, slug: marqeta, name: Marqeta}
