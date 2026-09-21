@@ -224,9 +224,8 @@ def main(argv=None) -> int:
 
     sr = sub.add_parser("run", help="run the daily pipeline")
     sr.add_argument("--mock", action="store_true", help="bundled fixtures, no network")
-    sr.add_argument("--scorer", choices=["llm", "keyword", "claude"], default="llm",
-                    help="keyword = offline stub, needs no API key ('claude' is an "
-                         "alias for 'llm', kept for older docs)")
+    sr.add_argument("--scorer", choices=["llm", "keyword"], default="llm",
+                    help="keyword = offline stub, needs no API key")
     sr.add_argument("--no-draft", action="store_true", help="skip the expensive stage")
     sr.add_argument("--send", action="store_true", help="actually email the digest")
     sr.add_argument("--limit", type=int, help="cap jobs sent to the LLM (cost guard)")

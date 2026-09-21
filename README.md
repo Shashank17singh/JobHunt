@@ -5,8 +5,7 @@
 **An automated, agentic job-search pipeline that pulls from ATS boards, prefilters noise, scores matches against your resume using LLMs, and drafts tailored cover letters.**
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-LLM%20Screening-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://aistudio.google.com/)
-[![Anthropic Claude](https://img.shields.io/badge/Anthropic%20Claude-LLM%20Drafting-D97757?style=for-the-badge&logo=anthropic&logoColor=white)](https://console.anthropic.com/)
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-LLM%20Screening%20%26%20Drafting-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://aistudio.google.com/)
 [![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Automation-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/features/actions)
 
 </div>
@@ -39,7 +38,7 @@ graph TD
     subgraph "3. LLM Pipeline"
     F --> G[Screening Model: Gemini Flash]
     G -->|Threshold Check| H{Score >= 7.0?}
-    H -->|Yes| I[Drafting Model: Claude Sonnet]
+    H -->|Yes| I[Drafting Model: Gemini]
     I -->|Tailored Kit| J[Digest Builder]
     end
     
@@ -66,7 +65,7 @@ graph TD
 - **Multi-ATS Integration**: Natively parses Greenhouse, Lever, and Ashby JSON endpoints, normalising different schemas, timezone bugs, and HTML-escaping quirks.
 - **Two-Stage LLM Routing**: 
   - *Stage 1 (Screening)*: Uses a fast, cheap model (e.g., Gemini Flash-Lite) to batch-score jobs out of 10 based on strict seniority and skill alignment.
-  - *Stage 2 (Drafting)*: Uses a highly capable model (e.g., Claude 3.5 Sonnet) to generate 150-word cover letters, tailored resume bullets, and interview questions exclusively for top-scoring roles.
+  - *Stage 2 (Drafting)*: Uses a highly capable model (e.g., Gemini 1.5 Pro) to generate 150-word cover letters, tailored resume bullets, and interview questions exclusively for top-scoring roles.
 - **Cost-Optimized Determinism**: Uses regex rules (`config.yaml`) to drop wrong seniority, functions, and locations before a single token is spent, keeping running costs below ₹5/day.
 - **Local JSON Storage**: Maintains a local `seen.json` state to ensure jobs are never evaluated twice.
 - **GitHub Actions Automation**: Designed to run statelessly on a cron schedule using GitHub Actions cache to persist the tracking store.
@@ -91,7 +90,7 @@ Create your environment variables file:
 ```bash
 cp .env.example .env
 ```
-Add your `GEMINI_API_KEY` (or Groq/Anthropic equivalents) to `.env`.
+Add your `GEMINI_API_KEY` to `.env`.
 
 ### 3. Generate Your Profile
 
