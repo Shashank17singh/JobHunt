@@ -33,7 +33,6 @@ companies:
 # --- Extended Global Tech / AI / Unicorns ---
 - {ats: greenhouse, slug: stripe, name: Stripe}
 - {ats: greenhouse, slug: openai, name: OpenAI}
-- {ats: lever, slug: anthropic, name: Anthropic}
 - {ats: greenhouse, slug: github, name: GitHub}
 - {ats: lever, slug: figma, name: Figma}
 - {ats: lever, slug: retool, name: Retool}

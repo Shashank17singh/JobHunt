@@ -259,7 +259,7 @@ def test_keyword_screen_stays_in_range_with_an_empty_profile():
 
 ENV_KEYS = ["LLM_PROVIDER", "SCREEN_PROVIDER", "DRAFT_PROVIDER",
             "SCREEN_MODEL", "DRAFT_MODEL", "GEMINI_API_KEY",
-            "GEMINI_API_KEY", "GROQ_API_KEY"]
+            "OPENAI_API_KEY"]
 
 
 @pytest.fixture
@@ -271,17 +271,17 @@ def clean_env(monkeypatch):
 
 def test_stage_provider_overrides_the_global_one(clean_env):
     clean_env.setenv("LLM_PROVIDER", "gemini")
-    clean_env.setenv("SCREEN_PROVIDER", "groq")
-    clean_env.setenv("GROQ_API_KEY", "gsk_test")
+    clean_env.setenv("SCREEN_PROVIDER", "openai-compatible")
+    clean_env.setenv("OPENAI_API_KEY", "sk-openai-test")
     clean_env.setenv("GEMINI_API_KEY", "sk-gemini-test")
 
     screen_p, screen_m = providers.resolve("screen")
     draft_p, draft_m = providers.resolve("draft")
 
-    assert screen_p.name == "groq"
+    assert screen_p.name == "openai-compatible"
     assert draft_p.name == "gemini"
     assert draft_m == "gemini-3.6-flash"
-    assert screen_m == "openai/gpt-oss-120b"
+    assert screen_m == "gpt-4o-mini"
 
 
 def test_explicit_model_wins_over_the_default(clean_env):
@@ -302,9 +302,9 @@ def test_missing_key_fails_at_resolve_not_on_the_first_batch(clean_env):
 
 
 def test_blank_key_counts_as_missing(clean_env):
-    clean_env.setenv("LLM_PROVIDER", "groq")
-    clean_env.setenv("GROQ_API_KEY", "   ")
-    with pytest.raises(LLMError, match="GROQ_API_KEY"):
+    clean_env.setenv("LLM_PROVIDER", "gemini")
+    clean_env.setenv("GEMINI_API_KEY", "   ")
+    with pytest.raises(LLMError, match="GEMINI_API_KEY"):
         providers.resolve("screen")
 
 
