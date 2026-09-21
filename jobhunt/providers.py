@@ -6,7 +6,6 @@ keep Claude for the expensive drafting pass - or run the whole thing on a free
 tier with no card on file.
 
     complete(system, user)            -> str   (every provider)
-    complete_document(prompt, pdf)    -> str   (Gemini only)
 
 Nothing here parses JSON or knows what a Job is. That lives in llm.py.
 """
@@ -24,9 +23,6 @@ TIMEOUT = 120
 class LLMError(RuntimeError):
     """Anything that came back wrong from a provider."""
 
-
-class UnsupportedDocument(LLMError):
-    """Provider cannot read a PDF; caller should fall back to plain text."""
 
 
 # ---------------------------------------------------------------------------
@@ -46,11 +42,7 @@ class Provider:
         """`json_mode` asks the provider to guarantee valid JSON where it can."""
         raise NotImplementedError
 
-    def complete_document(self, model: str, prompt: str, pdf: bytes,
-                          max_tokens: int) -> str:
-        raise UnsupportedDocument(
-            f"{self.name} cannot read PDFs here - pass a .txt/.md resume instead"
-        )
+
 
     @staticmethod
     def _env(key: str) -> str:
@@ -104,16 +96,7 @@ class GeminiProvider(Provider):
             body["system_instruction"] = {"parts": [{"text": system}]}
         return self._post(model, body)
 
-    def complete_document(self, model: str, prompt: str, pdf: bytes,
-                          max_tokens: int) -> str:
-        return self._post(model, {
-            "contents": [{"role": "user", "parts": [
-                {"inline_data": {"mime_type": "application/pdf",
-                                 "data": base64.b64encode(pdf).decode()}},
-                {"text": prompt},
-            ]}],
-            "generationConfig": {"maxOutputTokens": max_tokens, "temperature": 0.2},
-        })
+
 
 
 class OpenAICompatProvider(Provider):

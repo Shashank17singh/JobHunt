@@ -59,15 +59,13 @@ def cmd_profile(args) -> int:
     if not src.exists():
         print(f"resume not found: {src}")
         return 1
-    is_pdf = src.suffix.lower() == ".pdf"
 
     try:
         provider, model = resolve("draft")
-        print(f"reading {src.name} via {provider.name}/{model} ...")
+        print(f"Loading {src.name}...")
         profile = llm.build_profile(
-            resume_bytes=src.read_bytes() if is_pdf else None,
-            resume_text=None if is_pdf else src.read_text(encoding="utf-8", errors="replace"),
-            is_pdf=is_pdf, provider=provider, model=model,
+            resume_text=src.read_text(encoding="utf-8", errors="replace"),
+            provider=provider, model=model,
         )
     except (LLMError, ValueError) as e:
         print(f"profile extraction failed: {e}")

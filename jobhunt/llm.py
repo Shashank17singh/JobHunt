@@ -70,26 +70,17 @@ Return ONLY a JSON object, no prose, no markdown fences:
 }"""
 
 
-def build_profile(resume_bytes: bytes | None = None, resume_text: str | None = None,
-                  is_pdf: bool = False, provider: Provider | None = None,
-                  model: str | None = None) -> dict:
-    """Resume (PDF or text) -> profile.json. Uses the draft-stage model."""
-    if provider is None or model is None:
+def build_profile(resume_text: str | None = None,
+                  provider: Provider | None = None,
+                  model: str = "") -> dict:
+    """Resume text -> profile.json. Uses the draft-stage model."""
+    if not provider or not model:
         provider, model = resolve("draft")
 
-    if is_pdf and resume_bytes:
-        try:
-            raw = provider.complete_document(
-                model, PROFILE_PROMPT, resume_bytes, PROFILE_MAX_TOKENS)
-        except LLMError as e:
-            raise LLMError(
-                f"{e}\nTip: export your resume to .txt and re-run, or set "
-                f"DRAFT_PROVIDER=gemini for PDF support."
-            ) from e
-    else:
-        raw = provider.complete(
-            model, "", f"{PROFILE_PROMPT}\n\n--- RESUME ---\n{resume_text or ''}",
-            PROFILE_MAX_TOKENS, json_mode=True)
+    raw = provider.complete(
+        model, "", f"{PROFILE_PROMPT}\n\n--- RESUME ---\n"
+        f"{resume_text or ''}",
+        PROFILE_MAX_TOKENS, json_mode=True)
 
     profile = parse_json(raw)
     if not isinstance(profile, dict):
