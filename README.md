@@ -95,9 +95,9 @@ Add your `GEMINI_API_KEY` (or Groq/Anthropic equivalents) to `.env`.
 
 ### 3. Generate Your Profile
 
-Pass your resume (PDF or TXT) to the agent so it can build your matching profile:
+Pass your resume (.tex, .md, or .txt) to the agent so it can build your matching profile:
 ```bash
-python -m jobhunt profile --resume resume.pdf
+python -m jobhunt profile --resume JobHunt_Resume.tex
 ```
 *This generates `profile.json`. Review and adjust it to ensure accurate matching.*
 

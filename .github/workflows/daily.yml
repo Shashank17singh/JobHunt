@@ -53,7 +53,7 @@ jobs:
       - name: Write profile.json
         # profile.json is gitignored (it is derived from your resume), so CI
         # gets it from a secret. Create it locally with
-        #   python -m jobhunt profile --resume resume.pdf
+        #   python -m jobhunt profile --resume JobHunt_Resume.tex
         # then paste the file contents into the PROFILE_JSON repo secret.
         env:
           PROFILE_JSON: ${{ secrets.PROFILE_JSON }}
