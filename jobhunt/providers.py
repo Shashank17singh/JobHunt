@@ -188,7 +188,7 @@ def get_provider(name: str) -> Provider:
 def resolve(stage: str, check: bool = True) -> tuple[Provider, str]:
     name = (os.getenv(f"{stage.upper()}_PROVIDER")
             or os.getenv("LLM_PROVIDER")
-            or "groq").strip().lower()
+            or "gemini").strip().lower()
     provider = get_provider(name)
     model = (os.getenv(f"{stage.upper()}_MODEL") or "").strip() \
         or DEFAULT_MODELS.get(name, {}).get(stage)
