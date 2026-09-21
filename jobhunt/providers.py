@@ -6,7 +6,7 @@ keep Claude for the expensive drafting pass - or run the whole thing on a free
 tier with no card on file.
 
     complete(system, user)            -> str   (every provider)
-    complete_document(prompt, pdf)    -> str   (Anthropic + Gemini only)
+    complete_document(prompt, pdf)    -> str   (Gemini only)
 
 Nothing here parses JSON or knows what a Job is. That lives in llm.py.
 """
@@ -58,48 +58,6 @@ class Provider:
         if not value:
             raise LLMError(f"{key} is not set (see .env.example)")
         return value
-
-
-class AnthropicProvider(Provider):
-    name = "anthropic"
-    required_env = "ANTHROPIC_API_KEY"
-
-    def _client(self):
-        try:
-            from anthropic import Anthropic
-        except ImportError:
-            raise LLMError("pip install anthropic") from None
-        return Anthropic(api_key=self._env("ANTHROPIC_API_KEY"))
-
-    @staticmethod
-    def _text(msg) -> str:
-        return "".join(b.text for b in msg.content if getattr(b, "type", None) == "text")
-
-    def complete(self, model: str, system: str, user: str, max_tokens: int,
-                 json_mode: bool = False) -> str:
-        msg = self._client().messages.create(
-            model=model,
-            max_tokens=max_tokens,
-            system=system,
-            messages=[{"role": "user", "content": user}],
-        )
-        return self._text(msg)
-
-    def complete_document(self, model: str, prompt: str, pdf: bytes,
-                          max_tokens: int) -> str:
-        msg = self._client().messages.create(
-            model=model,
-            max_tokens=max_tokens,
-            messages=[{"role": "user", "content": [
-                {"type": "document", "source": {
-                    "type": "base64",
-                    "media_type": "application/pdf",
-                    "data": base64.b64encode(pdf).decode(),
-                }},
-                {"type": "text", "text": prompt},
-            ]}],
-        )
-        return self._text(msg)
 
 
 class GeminiProvider(Provider):
@@ -221,7 +179,6 @@ class OllamaProvider(Provider):
 
 
 PROVIDERS = {
-    "anthropic": AnthropicProvider,
     "gemini": GeminiProvider,
     "groq": GroqProvider,
     "openai-compatible": OpenAICompatProvider,
@@ -229,7 +186,6 @@ PROVIDERS = {
 }
 
 DEFAULT_MODELS = {
-    "anthropic": {"screen": "claude-haiku-4-5-20251001", "draft": "claude-sonnet-5"},
     "gemini": {"screen": "gemini-2.0-flash", "draft": "gemini-2.0-flash"},
     "groq": {"screen": "llama-3.3-70b-versatile", "draft": "llama-3.3-70b-versatile"},
     "openai-compatible": {"screen": "gpt-4o-mini", "draft": "gpt-4o"},
@@ -249,7 +205,7 @@ def get_provider(name: str) -> Provider:
 def resolve(stage: str, check: bool = True) -> tuple[Provider, str]:
     name = (os.getenv(f"{stage.upper()}_PROVIDER")
             or os.getenv("LLM_PROVIDER")
-            or "anthropic").strip().lower()
+            or "gemini").strip().lower()
     provider = get_provider(name)
     model = (os.getenv(f"{stage.upper()}_MODEL") or "").strip() \
         or DEFAULT_MODELS.get(name, {}).get(stage)

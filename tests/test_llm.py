@@ -258,7 +258,7 @@ def test_keyword_screen_stays_in_range_with_an_empty_profile():
 # ---------------------------------------------------------------------------
 
 ENV_KEYS = ["LLM_PROVIDER", "SCREEN_PROVIDER", "DRAFT_PROVIDER",
-            "SCREEN_MODEL", "DRAFT_MODEL", "ANTHROPIC_API_KEY",
+            "SCREEN_MODEL", "DRAFT_MODEL", "GEMINI_API_KEY",
             "GEMINI_API_KEY", "GROQ_API_KEY"]
 
 
@@ -270,34 +270,34 @@ def clean_env(monkeypatch):
 
 
 def test_stage_provider_overrides_the_global_one(clean_env):
-    clean_env.setenv("LLM_PROVIDER", "anthropic")
+    clean_env.setenv("LLM_PROVIDER", "gemini")
     clean_env.setenv("SCREEN_PROVIDER", "groq")
     clean_env.setenv("GROQ_API_KEY", "gsk_test")
-    clean_env.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+    clean_env.setenv("GEMINI_API_KEY", "sk-gemini-test")
 
     screen_p, screen_m = providers.resolve("screen")
     draft_p, draft_m = providers.resolve("draft")
 
     assert screen_p.name == "groq"
-    assert draft_p.name == "anthropic"
-    assert draft_m == "claude-sonnet-5"
+    assert draft_p.name == "gemini"
+    assert draft_m == "gemini-2.0-flash"
     assert screen_m == "llama-3.3-70b-versatile"
 
 
 def test_explicit_model_wins_over_the_default(clean_env):
-    clean_env.setenv("LLM_PROVIDER", "anthropic")
-    clean_env.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
-    clean_env.setenv("SCREEN_MODEL", "claude-haiku-4-5-20251001")
-    _, model = providers.resolve("screen")
-    assert model == "claude-haiku-4-5-20251001"
+    clean_env.setenv("LLM_PROVIDER", "gemini")
+    clean_env.setenv("GEMINI_API_KEY", "sk-gemini-test")
+    clean_env.setenv("SCREEN_MODEL", "gemini-2.0-flash")
+    p, model = providers.resolve("screen")
+    assert model == "gemini-2.0-flash"
 
 
 def test_missing_key_fails_at_resolve_not_on_the_first_batch(clean_env):
     """A key error must surface before we start spending, otherwise every
     batch fails identically and the run ends with a plausible-looking empty
     digest."""
-    clean_env.setenv("LLM_PROVIDER", "anthropic")
-    with pytest.raises(LLMError, match="ANTHROPIC_API_KEY"):
+    clean_env.setenv("LLM_PROVIDER", "gemini")
+    with pytest.raises(LLMError, match="GEMINI_API_KEY"):
         providers.resolve("screen")
 
 
@@ -316,7 +316,7 @@ def test_ollama_needs_no_credentials(clean_env):
 
 def test_unknown_provider_lists_the_valid_ones(clean_env):
     clean_env.setenv("LLM_PROVIDER", "gpt5-turbo-ultra")
-    with pytest.raises(LLMError, match="anthropic"):
+    with pytest.raises(LLMError, match="gemini"):
         providers.resolve("screen")
 
 
