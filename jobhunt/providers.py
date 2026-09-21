@@ -1,9 +1,8 @@
 """Provider-agnostic LLM clients.
 
-One tiny interface, five backends. Screening and drafting each pick their own
-provider from env vars, so you can point the cheap pass at Groq or Gemini and
-keep Claude for the expensive drafting pass - or run the whole thing on a free
-tier with no card on file.
+One tiny interface, multiple backends. Screening and drafting each pick
+their own provider from env vars.
+Pin selection to current chat prompt (Ctrl+Alt+X) | Don't
 
     complete(system, user)            -> str   (every provider)
 
@@ -101,9 +100,9 @@ class GeminiProvider(Provider):
 
 class OpenAICompatProvider(Provider):
     name = "openai-compatible"
-    required_env = "GROQ_API_KEY"
-    default_base = "https://api.groq.com/openai/v1"
-    key_env = "GROQ_API_KEY"
+    required_env = "OPENAI_API_KEY"
+    default_base = "https://api.openai.com/v1"
+    key_env = "OPENAI_API_KEY"
 
     def complete(self, model: str, system: str, user: str, max_tokens: int,
                  json_mode: bool = False) -> str:
@@ -126,10 +125,6 @@ class OpenAICompatProvider(Provider):
             return r.json()["choices"][0]["message"]["content"]
         except (KeyError, IndexError, ValueError) as e:
             raise LLMError(f"{self.name} malformed reply: {r.text[:300]}") from e
-
-
-class GroqProvider(OpenAICompatProvider):
-    name = "groq"
 
 
 class OllamaProvider(Provider):
@@ -163,14 +158,12 @@ class OllamaProvider(Provider):
 
 PROVIDERS = {
     "gemini": GeminiProvider,
-    "groq": GroqProvider,
     "openai-compatible": OpenAICompatProvider,
     "ollama": OllamaProvider,
 }
 
 DEFAULT_MODELS = {
     "gemini": {"screen": "gemini-3.6-flash", "draft": "gemini-3.6-flash"},
-    "groq": {"screen": "openai/gpt-oss-120b", "draft": "openai/gpt-oss-120b"},
     "openai-compatible": {"screen": "gpt-4o-mini", "draft": "gpt-4o"},
     "ollama": {"screen": "llama3.1", "draft": "llama3.1"},
 }
