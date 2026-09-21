@@ -169,8 +169,8 @@ PROVIDERS = {
 }
 
 DEFAULT_MODELS = {
-    "gemini": {"screen": "gemini-2.0-flash", "draft": "gemini-2.0-flash"},
-    "groq": {"screen": "llama-3.3-70b-versatile", "draft": "llama-3.3-70b-versatile"},
+    "gemini": {"screen": "gemini-3.6-flash", "draft": "gemini-3.6-flash"},
+    "groq": {"screen": "openai/gpt-oss-120b", "draft": "openai/gpt-oss-120b"},
     "openai-compatible": {"screen": "gpt-4o-mini", "draft": "gpt-4o"},
     "ollama": {"screen": "llama3.1", "draft": "llama3.1"},
 }
@@ -188,7 +188,7 @@ def get_provider(name: str) -> Provider:
 def resolve(stage: str, check: bool = True) -> tuple[Provider, str]:
     name = (os.getenv(f"{stage.upper()}_PROVIDER")
             or os.getenv("LLM_PROVIDER")
-            or "gemini").strip().lower()
+            or "groq").strip().lower()
     provider = get_provider(name)
     model = (os.getenv(f"{stage.upper()}_MODEL") or "").strip() \
         or DEFAULT_MODELS.get(name, {}).get(stage)

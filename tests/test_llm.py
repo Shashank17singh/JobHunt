@@ -280,16 +280,16 @@ def test_stage_provider_overrides_the_global_one(clean_env):
 
     assert screen_p.name == "groq"
     assert draft_p.name == "gemini"
-    assert draft_m == "gemini-2.0-flash"
-    assert screen_m == "llama-3.3-70b-versatile"
+    assert draft_m == "gemini-3.6-flash"
+    assert screen_m == "openai/gpt-oss-120b"
 
 
 def test_explicit_model_wins_over_the_default(clean_env):
     clean_env.setenv("LLM_PROVIDER", "gemini")
     clean_env.setenv("GEMINI_API_KEY", "sk-gemini-test")
-    clean_env.setenv("SCREEN_MODEL", "gemini-2.0-flash")
+    clean_env.setenv("SCREEN_MODEL", "gemini-3.6-flash")
     p, model = providers.resolve("screen")
-    assert model == "gemini-2.0-flash"
+    assert model == "gemini-3.6-flash"
 
 
 def test_missing_key_fails_at_resolve_not_on_the_first_batch(clean_env):
