@@ -98,74 +98,15 @@ class GeminiProvider(Provider):
 
 
 
-class OpenAICompatProvider(Provider):
-    name = "openai-compatible"
-    required_env = "OPENAI_API_KEY"
-    default_base = "https://api.openai.com/v1"
-    key_env = "OPENAI_API_KEY"
 
-    def complete(self, model: str, system: str, user: str, max_tokens: int,
-                 json_mode: bool = False) -> str:
-        base = os.getenv("LLM_BASE_URL", self.default_base).rstrip("/")
-        messages = ([{"role": "system", "content": system}] if system else []) + \
-                   [{"role": "user", "content": user}]
-        payload: dict[str, Any] = {"model": model, "messages": messages,
-                                   "max_tokens": max_tokens, "temperature": 0.2}
-        if json_mode:
-            payload["response_format"] = {"type": "json_object"}
-        r = requests.post(
-            f"{base}/chat/completions",
-            headers={"Authorization": f"Bearer {self._env(self.key_env)}"},
-            json=payload,
-            timeout=TIMEOUT,
-        )
-        if r.status_code != 200:
-            raise LLMError(f"{self.name} HTTP {r.status_code}: {r.text[:300]}")
-        try:
-            return r.json()["choices"][0]["message"]["content"]
-        except (KeyError, IndexError, ValueError) as e:
-            raise LLMError(f"{self.name} malformed reply: {r.text[:300]}") from e
-
-
-class OllamaProvider(Provider):
-    name = "ollama"
-
-    def complete(self, model: str, system: str, user: str, max_tokens: int,
-                 json_mode: bool = False) -> str:
-        base = os.getenv("OLLAMA_HOST", "http://localhost:11434").rstrip("/")
-        messages = ([{"role": "system", "content": system}] if system else []) + \
-                   [{"role": "user", "content": user}]
-        payload: dict[str, Any] = {
-            "model": model, "messages": messages, "stream": False,
-            "options": {"temperature": 0.2, "num_predict": max_tokens},
-        }
-        if json_mode:
-            payload["format"] = "json"
-        try:
-            r = requests.post(
-                f"{base}/api/chat", json=payload, timeout=TIMEOUT,
-            )
-        except requests.RequestException as e:
-            raise LLMError(
-                f"ollama unreachable at {base} - is `ollama serve` running?") from e
-        if r.status_code != 200:
-            raise LLMError(f"ollama HTTP {r.status_code}: {r.text[:300]}")
-        try:
-            return r.json()["message"]["content"]
-        except (KeyError, ValueError) as e:
-            raise LLMError(f"ollama malformed reply: {r.text[:300]}") from e
 
 
 PROVIDERS = {
     "gemini": GeminiProvider,
-    "openai-compatible": OpenAICompatProvider,
-    "ollama": OllamaProvider,
 }
 
 DEFAULT_MODELS = {
-    "gemini": {"screen": "gemini-3.6-flash", "draft": "gemini-3.6-flash"},
-    "openai-compatible": {"screen": "gpt-4o-mini", "draft": "gpt-4o"},
-    "ollama": {"screen": "llama3.1", "draft": "llama3.1"},
+    "gemini": {"screen": "gemini-3.8-flash", "draft": "gemini-3.1-pro-preview"},
 }
 
 

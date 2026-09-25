@@ -1,16 +1,16 @@
-# jobhunt configuration. Everything tunable lives here — no editing Python.
+# Core Pipeline Configuration
 #
-# Tune `filters` first. It is deterministic, free, and it is what keeps the
-# LLM bill small: roughly 2000 raw postings -> 40 candidates before a single
-# token is spent.
+# Primary Application Settings
+#
+# The `filters` block establishes deterministic exclusion criteria to minimize LLM inference overhead.
+# By aggressively pre-filtering roles based on regex patterns, the pipeline achieves substantial
+# cost reductions (e.g., pruning 2,000 raw postings down to 40 candidates) before LLM scoring begins.
 
 filters:
-  # Title regexes, matched case-insensitively against the job title only.
-  # A title must match at least one include AND zero excludes.
-  #
-  # Gotcha: "sde" as a bare regex does NOT match "Software Development
-  # Engineer" — different words entirely. Use \bsde\b for the acronym and
-  # list the spelled-out variants separately, as below.
+  # Title Inclusion Patterns
+  # Regular expressions evaluated against the job title (case-insensitive).
+  # A posting is retained if its title matches at least one inclusion pattern AND zero exclusion patterns.
+  # Note: Use word boundaries (\b) to isolate specific acronyms (e.g., \bsde\b).
 
   include_titles:
     # --- Software / Backend / Systems Engineering ---
@@ -39,24 +39,25 @@ filters:
     - '\b(ml|ai)\b.*\b(engineer|developer)\b'
     - '\bengineer\b.*\b(ml|ai|machine learning)\b'
     - '\bdata\s+science\b'
-    # --- Intern-specific patterns ---
+    # --- Entry-Level / Internship Classifications ---
     - '\bintern\b'
     - '\btrainee\b'
     - '\bapprentice\b'
 
-  # Anything matching these is dropped even if an include matched.
+  # Title Exclusion Patterns
+  # Postings matching any of these patterns will be immediately discarded, superseding any inclusion matches.
   exclude_titles:
-    - '\b(staff|principal|distinguished|fellow|architect)\b'      # too senior
+    - '\b(staff|principal|distinguished|fellow|architect)\b'      # Exceeds target seniority threshold
     - '\bsenior\b'
     - '\b(director|vp|vice president|head of|chief|cto)\b'
     - '\b(manager|management)\b'
     - '\b(sales|account executive|marketing|recruit|support|success)\b'
-    - '\b(frontend|front-end|ios|android|mobile|game|designer)\b' # wrong discipline
     # Note: data scientist / ML scientist are NOT excluded — they match
     # Shashank's ML/DS training, certifications, and NIELIT capstone.
 
-  # Substrings matched against "<location> <title>", case-insensitive.
-  # Leave empty to accept every location.
+  # Location Constraints
+  # Substrings evaluated against the combined string "<location> <title>" (case-insensitive).
+  # Leaving this array empty bypasses location filtering.
   locations:
     - bangalore
     - bengaluru
@@ -70,19 +71,20 @@ filters:
     - pune
     - india
 
-  # If true, anything reading as remote passes the location gate.
+  # If enabled, roles explicitly designated as "remote" will bypass standard location constraints.
   allow_remote: true
 
-  # Drop postings older than this. Set to null to disable.
-  # Boards often re-stamp `updated_at`, so this is a soft signal, not a promise.
+  # Maximum Age Threshold
+  # Discards postings older than the specified duration in days. Set to null to disable.
+  # Note: This is a best-effort metric as ATS platforms frequently update timestamps arbitrarily.
   max_age_days: 30
 
-# --- LLM stages -------------------------------------------------------------
-screen_batch_size: 8      # jobs per screening call. Higher = cheaper, sloppier.
-screen_jd_chars: 1400     # JD truncation for screening
-draft_jd_chars: 6000      # JD truncation for drafting
-score_threshold: 7.0      # below this, no draft and no digest slot
-max_per_digest: 5         # hard cap on expensive draft calls per run
+# --- LLM Processing Settings --------------------------------------------------
+screen_batch_size: 8      # Concurrent job evaluations per screening inference.
+screen_jd_chars: 1400     # Maximum character length for job descriptions during the screening phase.
+draft_jd_chars: 6000      # Maximum character length for job descriptions during the drafting phase.
+score_threshold: 7.0      # Minimum evaluation score required to trigger draft generation and digest inclusion.
+max_per_digest: 5         # Maximum limit for drafting API calls per execution cycle.
 
 # --- paths ------------------------------------------------------------------
 companies_file: companies.yaml
