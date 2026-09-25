@@ -1,12 +1,13 @@
-# Boards to poll. One entry per company.
+# Target Job Boards Configuration
 #
-#   ats:   greenhouse | lever | ashby
-#   slug:  the company's board identifier (NOT its domain)
-#   name:  whatever you want to see in the digest
+# Schema:
+#   ats:   The Applicant Tracking System platform in use (greenhouse | lever | ashby).
+#   slug:  The unique board identifier for the company's ATS instance.
+#   name:  The display name to render in the output digest.
 #
-# A dead slug is not fatal: fetch_board prints the HTTP status and returns [],
-# so one bad entry never takes down the run. Watch the per-board job counts on
-# stdout — a board reporting 0 jobs every day is a slug that needs fixing.
+# Error Handling:
+# Invalid slugs will gracefully return an empty array rather than terminating the pipeline.
+# Monitor the stdout logs during execution to identify and resolve consistently failing slugs.
 
 companies:
 # --- India-first companies ---

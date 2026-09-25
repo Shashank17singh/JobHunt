@@ -238,6 +238,42 @@ def keyword_screen(jobs: list[Job], profile: dict, **_) -> list[Job]:
         overlap = len(hits) / max(len(skills), 1)
         title_bonus = 2.5 if any(t in j.title.lower() for t in titles) else 0.0
         j.score = round(min(10.0, overlap * 12 + title_bonus), 1)
-        j.reason = ("[keyword stub] matched: " + ", ".join(hits[:5])) if hits \
-            else "[keyword stub] no skill overlap"
+        j.reason = ("[keyword stub] matched: " + ", ".join(hits[:5])) if hits else "[keyword stub] no match"
     return jobs
+
+
+LATEX_SYSTEM = """You tailor a LaTeX resume for a specific job application.
+
+You are given:
+1. The original LaTeX resume.
+2. The tailored application kit (fit summary, tailored bullets, cover note).
+3. The job description.
+
+Your task is to rewrite the LaTeX resume to incorporate the tailored bullets and highlight the most relevant skills/projects for the job. 
+Hard Rules:
+- Output MUST be valid LaTeX code.
+- Return ONLY the raw LaTeX string. Do not wrap it in ```latex or ``` code blocks. Do not add any explanatory text.
+- Never invent experience. Only use facts from the original resume and the tailored kit.
+- Ensure the LaTeX syntax is strictly preserved so it compiles without errors."""
+
+def draft_latex(job: Job, reference_tex: str,
+                provider: Provider | None = None, model: str | None = None) -> str | None:
+    if provider is None or model is None:
+        provider, model = resolve("draft")
+    
+    kit_blob = json.dumps(job.draft, ensure_ascii=False)
+    
+    try:
+        raw = provider.complete(
+            model, LATEX_SYSTEM,
+            f"TAILORED KIT:\n{kit_blob}\n\n"
+            f"JOB: {job.title} at {job.company}\n\n"
+            f"ORIGINAL LATEX RESUME:\n{reference_tex}",
+            DRAFT_MAX_TOKENS, json_mode=False
+        )
+        cleaned = re.sub(r"^\s*```(?:latex|tex)?\s*", "", raw, flags=re.M)
+        cleaned = re.sub(r"\s*```\s*$", "", cleaned, flags=re.M)
+        return cleaned.strip()
+    except Exception as e:
+        print(f"  ! latex draft failed for {job.job_id} ({type(e).__name__}: {e})")
+        return None
