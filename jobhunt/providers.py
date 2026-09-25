@@ -57,30 +57,39 @@ class GeminiProvider(Provider):
     BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
     def _post(self, model: str, body: dict) -> str:
-        r = requests.post(
-            f"{self.BASE}/{model}:generateContent",
-            params={"key": self._env("GEMINI_API_KEY")},
-            json=body,
-            timeout=TIMEOUT,
-        )
-        if r.status_code != 200:
-            raise LLMError(f"gemini HTTP {r.status_code}: {r.text[:300]}")
-        try:
-            candidate = r.json()["candidates"][0]
-        except (KeyError, IndexError, ValueError) as e:
-            raise LLMError(f"gemini returned no candidates: {r.text[:300]}") from e
-
-        reason = candidate.get("finishReason")
-        parts = (candidate.get("content") or {}).get("parts") or []
-        text = "".join(p.get("text", "") for p in parts if "text" in p)
-        if reason == "MAX_TOKENS" or (not text and reason not in (None, "STOP")):
-            raise LLMError(
-                f"gemini stopped early (finishReason={reason}) with "
-                f"{len(text)} chars of output — raise max_tokens for this stage"
+        import time
+        for attempt in range(5):
+            r = requests.post(
+                f"{self.BASE}/{model}:generateContent",
+                params={"key": self._env("GEMINI_API_KEY")},
+                json=body,
+                timeout=TIMEOUT,
             )
-        if not text:
-            raise LLMError(f"gemini returned no text: {r.text[:300]}")
-        return text
+            if r.status_code in (429, 503, 500) and attempt < 4:
+                print(f"  gemini HTTP {r.status_code}, retrying in {4 * (attempt + 1)}s...")
+                time.sleep(4 * (attempt + 1))
+                continue
+            elif r.status_code != 200:
+                raise LLMError(f"gemini HTTP {r.status_code}: {r.text[:300]}")
+            
+            try:
+                candidate = r.json()["candidates"][0]
+            except (KeyError, IndexError, ValueError) as e:
+                raise LLMError(f"gemini returned no candidates: {r.text[:300]}") from e
+
+            reason = candidate.get("finishReason")
+            parts = (candidate.get("content") or {}).get("parts") or []
+            text = "".join(p.get("text", "") for p in parts if "text" in p)
+            if reason == "MAX_TOKENS" or (not text and reason not in (None, "STOP")):
+                raise LLMError(
+                    f"gemini stopped early (finishReason={reason}) with "
+                    f"{len(text)} chars of output — raise max_tokens for this stage"
+                )
+            if not text:
+                raise LLMError(f"gemini returned no text: {r.text[:300]}")
+            
+            time.sleep(4)  # Prevent burst rate limits
+            return text
 
     def complete(self, model: str, system: str, user: str, max_tokens: int,
                  json_mode: bool = False) -> str:
