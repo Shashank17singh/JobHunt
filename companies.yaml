@@ -16,3 +16,9 @@ companies:
 - {ats: ashby, slug: aistudio, name: AiStudio}
 - {ats: lever, slug: getwingapp, name: Wing Assistant}
 - {ats: lever, slug: drivetrain, name: Drivetrain}
+
+# --- High-Bar / Tier-Agnostic Companies (Hard / Very Hard) ---
+# (Companies known for extremely hard algorithms/system design rounds but hire on raw skill from any college tier)
+- {ats: lever, slug: zeta, name: Zeta}
+- {ats: greenhouse, slug: rubrik, name: Rubrik}
+- {ats: lever, slug: meesho, name: Meesho}
