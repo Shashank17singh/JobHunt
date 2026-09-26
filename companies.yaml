@@ -17,6 +17,12 @@ companies:
 - {ats: lever, slug: getwingapp, name: Wing Assistant}
 - {ats: lever, slug: drivetrain, name: Drivetrain}
 
+# --- Scale-ups & FinTech (Medium / Practical Focus) ---
+# (Solid medium-tier engineering bars, highly open to Tier-3 with good projects)
+- {ats: lever, slug: mindtickle, name: Mindtickle}
+- {ats: greenhouse, slug: groww, name: Groww}
+- {ats: lever, slug: fi, name: Fi}
+
 # --- High-Bar / Tier-Agnostic Companies (Hard / Very Hard) ---
 # (Companies known for extremely hard algorithms/system design rounds but hire on raw skill from any college tier)
 - {ats: lever, slug: zeta, name: Zeta}
