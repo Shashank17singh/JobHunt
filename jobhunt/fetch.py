@@ -117,10 +117,36 @@ def parse_ashby(slug: str, company: str, body: Any) -> list[Job]:
     return out
 
 
+def parse_workday(slug: str, company: str, body: Any) -> list[Job]:
+    out = []
+    # Workday jobs usually return a 'jobPostings' array from the /cxs/ endpoint.
+    for j in (body or {}).get("jobPostings", []):
+        out.append(Job(
+            job_id=f"workday:{slug}:{j.get('bulletinId', j.get('id', ''))}",
+            ats="workday",
+            company=company,
+            title=(j.get("title") or "").strip(),
+            location=(j.get("locationsText") or "").strip(),
+            url=j.get("externalPath") or "",
+            description="",  # Workday typically requires a 2nd request per job for the JD
+            posted_at=j.get("postedOn"),
+        ))
+    return out
+
+
+def parse_taleo(slug: str, company: str, body: Any) -> list[Job]:
+    out = []
+    # Taleo JSON payloads vary wildly depending on the enterprise deployment (TBE vs Enterprise)
+    # Stubbed to allow adding companies without crashing.
+    return out
+
+
 ENDPOINTS = {
     "greenhouse": ("https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true", parse_greenhouse),
     "lever":      ("https://api.lever.co/v0/postings/{slug}?mode=json", parse_lever),
     "ashby":      ("https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true", parse_ashby),
+    "workday":    ("https://{slug}.wd1.myworkdayjobs.com/wday/cxs/{slug}/jobs", parse_workday),
+    "taleo":      ("https://{slug}.taleo.net/careersection/rest/jobboard/searchjobs?lang=en", parse_taleo),
 }
 
 

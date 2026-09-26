@@ -10,23 +10,31 @@
 # Monitor the stdout logs during execution to identify and resolve consistently failing slugs.
 
 companies:
-# --- India-first companies ---
-- {ats: greenhouse, slug: razorpaysoftwareprivatelimited, name: Razorpay}
-- {ats: greenhouse, slug: groww, name: Groww}
-- {ats: greenhouse, slug: slice, name: Slice}
-- {ats: lever, slug: zeta, name: Zeta}
-- {ats: lever, slug: meesho, name: Meesho}
-- {ats: ashby, slug: sarvam, name: Sarvam AI}
+# --- Startups & Practical-Interview Companies ---
+# (Selected for having practical, project-based interviews and being more open to non-Tier 1 backgrounds)
 - {ats: ashby, slug: certa, name: Certa}
 - {ats: ashby, slug: aistudio, name: AiStudio}
 - {ats: lever, slug: getwingapp, name: Wing Assistant}
-
-# --- Global companies with India offices ---
-- {ats: greenhouse, slug: abnormalsecurity, name: Abnormal Security}
-- {ats: greenhouse, slug: bitwarden, name: Bitwarden}
-- {ats: greenhouse, slug: coinbase, name: Coinbase}
-- {ats: ashby, slug: notion, name: Notion}
-- {ats: ashby, slug: collinear-ai, name: Collinear AI}
-- {ats: ashby, slug: ramp, name: Ramp}
 - {ats: lever, slug: drivetrain, name: Drivetrain}
-- {ats: lever, slug: merklescience, name: Merkle Science}
+
+# --- Scale-ups & B2B SaaS (Easy-Medium / Practical Focus) ---
+- {ats: lever, slug: clevertap, name: CleverTap}
+- {ats: lever, slug: lenskart, name: Lenskart}
+- {ats: lever, slug: darwinbox, name: Darwinbox}
+- {ats: greenhouse, slug: whatfix, name: Whatfix}
+- {ats: lever, slug: gupshup, name: Gupshup}
+- {ats: lever, slug: moengage, name: MoEngage}
+- {ats: lever, slug: yellowai, name: Yellow.ai}
+- {ats: greenhouse, slug: cvent, name: Cvent}
+- {ats: greenhouse, slug: payu, name: PayU}
+
+# --- Enterprise & Global Service Companies (Workday / Taleo) ---
+# (Mass recruiters and large MNCs known for being open to Tier-3 with an easy/medium bar)
+- {ats: taleo, slug: infosys, name: Infosys}
+- {ats: taleo, slug: tcs, name: TCS}
+- {ats: taleo, slug: wipro, name: Wipro}
+- {ats: taleo, slug: cognizant, name: Cognizant}
+- {ats: taleo, slug: capgemini, name: Capgemini}
+- {ats: workday, slug: accenture, name: Accenture}
+- {ats: workday, slug: ibm, name: IBM}
+- {ats: workday, slug: salesforce, name: Salesforce}
