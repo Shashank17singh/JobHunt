@@ -28,3 +28,14 @@ companies:
 - {ats: lever, slug: zeta, name: Zeta}
 - {ats: greenhouse, slug: rubrik, name: Rubrik}
 - {ats: lever, slug: meesho, name: Meesho}
+
+# --- Global / Remote-First Tech Giants ---
+# (Foreign companies that hire globally on merit, value open-source/projects, and ignore college tiers)
+- {ats: greenhouse, slug: gitlab, name: GitLab}
+- {ats: greenhouse, slug: cloudflare, name: Cloudflare}
+- {ats: greenhouse, slug: databricks, name: Databricks}
+- {ats: greenhouse, slug: twilio, name: Twilio}
+- {ats: greenhouse, slug: elastic, name: Elastic}
+- {ats: greenhouse, slug: discord, name: Discord}
+- {ats: ashby, slug: vercel, name: Vercel}
+- {ats: ashby, slug: supabase, name: Supabase}
