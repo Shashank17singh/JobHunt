@@ -14,7 +14,7 @@
 
 ## Overview
 
-A personal job-search agent designed and developed from the ground up to solve the high-noise problem of modern job hunting. The pipeline reads open postings directly from public ATS APIs (Greenhouse, Lever, Ashby) every morning, deterministically prefilters the 99% that are irrelevant based on regex/location rules, and then uses a two-stage LLM pipeline to score the remaining roles against a parsed resume. For the top matches, it automatically drafts an application kit including tailored bullets and a cover letter, finally emailing a clean digest. 
+Engineered a personal job-search agent to solve the high-noise problem of modern job hunting. The pipeline reads open postings directly from public ATS APIs (Greenhouse, Lever, Ashby) every morning, deterministically prefilters the 99% that are irrelevant based on regex/location rules, and then uses a two-stage LLM pipeline to score the remaining roles against a parsed resume. For the top matches, it automatically drafts an application kit including tailored bullets and a cover letter, finally emailing a clean digest. 
 
 **Note: The system never auto-submits an application by design to avoid ATS blocking and spam. It acts strictly as an intelligent research and drafting assistant.**
 
