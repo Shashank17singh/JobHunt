@@ -14,7 +14,7 @@
 
 ## Overview
 
-Engineered a personal job-search agent to solve the high-noise problem of modern job hunting. The pipeline reads open postings directly from public ATS APIs (Greenhouse, Lever, Ashby, Workday, Taleo) every morning, deterministically prefilters the 99% that are irrelevant based on regex/location rules, and then uses a two-stage LLM pipeline to score the remaining roles against a parsed resume. For the top matches, it automatically drafts an application kit including tailored bullets and a cover letter, finally emailing a clean digest. 
+Engineered a personal job-search agent to solve the high-noise problem of modern job hunting. The pipeline reads open postings directly from public ATS APIs (Greenhouse, Lever, Ashby) every morning, deterministically prefilters the 99% that are irrelevant based on regex/location rules, and then uses a two-stage LLM pipeline to score the remaining roles against a parsed resume. For the top matches, it automatically drafts an application kit including tailored bullets and a cover letter, finally emailing a clean digest. 
 
 **Note: The system never auto-submits an application by design to avoid ATS blocking and spam. It acts strictly as an intelligent research and drafting assistant.**
 
@@ -28,8 +28,6 @@ graph TD
     A[Greenhouse APIs] --> D(Job Fetcher)
     B[Lever APIs] --> D
     C[Ashby APIs] --> D
-    W[Workday APIs] --> D
-    T[Taleo APIs] --> D
     end
     
     subgraph "2. Deterministic Gate"
@@ -64,7 +62,7 @@ graph TD
 
 ## Key Features
 
-- **Multi-ATS Integration**: Natively parses Greenhouse, Lever, Ashby, Workday, and Taleo JSON endpoints, normalising different schemas, timezone bugs, and HTML-escaping quirks.
+- **Multi-ATS Integration**: Natively parses Greenhouse, Lever, and Ashby JSON endpoints, normalising different schemas, timezone bugs, and HTML-escaping quirks.
 - **Two-Stage LLM Routing**: 
   - *Stage 1 (Screening)*: Uses a fast, cheap model (e.g., Gemini 3.6 Flash) to batch-score jobs out of 10 based on strict seniority and skill alignment.
   - *Stage 2 (Drafting)*: Uses a highly capable model (e.g., Gemini 3.6 Flash) to generate 150-word cover letters, tailored resume bullets, and interview questions exclusively for top-scoring roles.
