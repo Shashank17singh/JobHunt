@@ -151,6 +151,7 @@ def cmd_run(args) -> int:
 
     # 4. LLM Drafting
     print(f"\n[4/5] drafting kits for {len(shortlist)}")
+    attachments = []
     if not shortlist:
         print("  nothing cleared the threshold")
     elif scorer == "keyword" or args.no_draft:
@@ -162,6 +163,33 @@ def cmd_run(args) -> int:
             llm.draft(shortlist, profile,
                       jd_chars=int(cfg.get("draft_jd_chars", 6000)),
                       provider=provider, model=model)
+            
+            ref_path = Path(cfg.get("resume_file", "JobHunt_Resume.tex"))
+            if ref_path.exists():
+                reference_tex = ref_path.read_text(encoding="utf-8")
+                out_dir = Path("out")
+                out_dir.mkdir(exist_ok=True)
+                import subprocess
+                for j in shortlist:
+                    print(f"  drafting latex for {j.title} @ {j.company}...")
+                    tex = llm.draft_latex(j, reference_tex, provider=provider, model=model)
+                    if tex:
+                        safe_name = f"{j.company}_{j.job_id}".replace(" ", "_").replace("/", "_")
+                        tex_file = out_dir / f"{safe_name}.tex"
+                        tex_file.write_text(tex, encoding="utf-8")
+                        res = subprocess.run(
+                            ["pdflatex", "-interaction=nonstopmode", f"-output-directory={out_dir}", str(tex_file)],
+                            capture_output=True
+                        )
+                        pdf_file = out_dir / f"{safe_name}.pdf"
+                        if pdf_file.exists():
+                            attachments.append(pdf_file)
+                        else:
+                            print(f"  ! failed to compile {tex_file.name}, attaching .tex instead")
+                            attachments.append(tex_file)
+            else:
+                print(f"  ! reference latex {ref_path} not found, skipping latex drafts")
+                
         except LLMError as e:
             print(f"  ! drafting unavailable: {e}")
 
@@ -174,7 +202,7 @@ def cmd_run(args) -> int:
     sent = False
     if args.send:
         try:
-            mailer.send(subject, doc)
+            mailer.send(subject, doc, attachments=attachments)
             sent = True
         except Exception as e:  # bad app password, blocked port, offline
             print(f"  ! email failed ({type(e).__name__}: {e}) — digest still on disk")

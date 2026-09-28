@@ -62,6 +62,7 @@ def _card(j: Job) -> str:
   </div>
   <div style="color:{MUTED};font-size:13px;margin-top:5px;">{html.escape(meta)}</div>
   {para(j.reason or "")}
+  {_section("Required Skills & Qualifications", _bullets(d.get("required_skills", [])))}
   {_section("Why it fits", para(d.get("fit_summary", "")))}
   {_section("Resume bullets for this role", _bullets(d.get("tailored_bullets", [])))}
   {_section("Honest gaps", _bullets(d.get("gaps", [])))}
