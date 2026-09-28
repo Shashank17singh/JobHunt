@@ -10,7 +10,7 @@ from .providers import LLMError, Provider, resolve
 _FENCE_OPEN = re.compile(r"^\s*```(?:json|JSON)?\s*", re.M)
 _FENCE_CLOSE = re.compile(r"\s*```\s*$", re.M)
 
-DRAFT_KEYS = ("fit_summary", "tailored_bullets", "gaps", "cover_note", "questions_to_ask")
+DRAFT_KEYS = ("fit_summary", "required_skills", "tailored_bullets", "gaps", "cover_note", "questions_to_ask")
 
 SCREEN_MAX_TOKENS = 4000
 DRAFT_MAX_TOKENS = 8000
@@ -173,6 +173,7 @@ not in a bullet.
 Return ONLY a JSON object, no prose:
 {
   "fit_summary": str,          // 2 sentences: why this is worth their time
+  "required_skills": [str],    // 3-5 key skills, qualifications, or requirements for the job
   "tailored_bullets": [str],   // 3-4 resume bullets rewritten for THIS job,
                                // using only real experience from the profile,
                                // each with a concrete artefact or number
@@ -207,6 +208,7 @@ def draft(jobs: list[Job], profile: dict, jd_chars: int = 6000,
             # Normalise the structure for the digest template
             j.draft = {
                 "fit_summary": str(kit.get("fit_summary") or ""),
+                "required_skills": [str(s) for s in (kit.get("required_skills") or [])],
                 "tailored_bullets": [str(b) for b in (kit.get("tailored_bullets") or [])],
                 "gaps": [str(g) for g in (kit.get("gaps") or [])],
                 "cover_note": str(kit.get("cover_note") or ""),
