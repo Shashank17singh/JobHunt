@@ -24,9 +24,6 @@ class LLMError(RuntimeError):
 
 
 
-# ---------------------------------------------------------------------------
-
-
 class Provider:
     name = "base"
     required_env: str | None = None

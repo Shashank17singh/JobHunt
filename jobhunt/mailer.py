@@ -28,7 +28,6 @@ def send(subject: str, html_body: str, attachments: list[str | os.PathLike] | No
             if path.exists():
                 with open(path, "rb") as f:
                     content = f.read()
-                # Determine basic mime type
                 maintype = "application"
                 subtype = "pdf" if path.suffix.lower() == ".pdf" else "octet-stream"
                 msg.add_attachment(content, maintype=maintype, subtype=subtype, filename=path.name)
