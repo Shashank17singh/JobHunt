@@ -8,9 +8,9 @@ Pin selection to current chat prompt (Ctrl+Alt+X) | Don't
 
 Nothing here parses JSON or knows what a Job is. That lives in llm.py.
 """
+
 from __future__ import annotations
 
-import base64
 import os
 from typing import Any
 
@@ -23,7 +23,6 @@ class LLMError(RuntimeError):
     """Anything that came back wrong from a provider."""
 
 
-
 class Provider:
     name = "base"
     required_env: str | None = None
@@ -33,12 +32,16 @@ class Provider:
         if self.required_env:
             self._env(self.required_env)
 
-    def complete(self, model: str, system: str, user: str, max_tokens: int,
-                 json_mode: bool = False) -> str:
+    def complete(
+        self,
+        model: str,
+        system: str,
+        user: str,
+        max_tokens: int,
+        json_mode: bool = False,
+    ) -> str:
         """`json_mode` asks the provider to guarantee valid JSON where it can."""
         raise NotImplementedError
-
-
 
     @staticmethod
     def _env(key: str) -> str:
@@ -51,6 +54,7 @@ class Provider:
 
 class GeminiProvider(Provider):
     """Google Gemini provider implementation."""
+
     name = "gemini"
     required_env = "GEMINI_API_KEY"
     BASE = "https://generativelanguage.googleapis.com/v1beta/models"
@@ -58,6 +62,7 @@ class GeminiProvider(Provider):
     def _post(self, model: str, body: dict) -> str:
         """Sends a POST request to the Gemini API with retries for rate limits."""
         import time
+
         for attempt in range(5):
             r = requests.post(
                 f"{self.BASE}/{model}:generateContent",
@@ -66,12 +71,14 @@ class GeminiProvider(Provider):
                 timeout=TIMEOUT,
             )
             if r.status_code in (429, 503, 500) and attempt < 4:
-                print(f"  gemini HTTP {r.status_code}, retrying in {4 * (attempt + 1)}s...")
+                print(
+                    f"  gemini HTTP {r.status_code}, retrying in {4 * (attempt + 1)}s..."
+                )
                 time.sleep(4 * (attempt + 1))
                 continue
             elif r.status_code != 200:
                 raise LLMError(f"gemini HTTP {r.status_code}: {r.text[:300]}")
-            
+
             try:
                 candidate = r.json()["candidates"][0]
             except (KeyError, IndexError, ValueError) as e:
@@ -87,12 +94,18 @@ class GeminiProvider(Provider):
                 )
             if not text:
                 raise LLMError(f"gemini returned no text: {r.text[:300]}")
-            
+
             time.sleep(4)  # Prevent burst rate limits
             return text
 
-    def complete(self, model: str, system: str, user: str, max_tokens: int,
-                 json_mode: bool = False) -> str:
+    def complete(
+        self,
+        model: str,
+        system: str,
+        user: str,
+        max_tokens: int,
+        json_mode: bool = False,
+    ) -> str:
         gen: dict[str, Any] = {"maxOutputTokens": max_tokens, "temperature": 0.2}
         if json_mode:
             gen["responseMimeType"] = "application/json"
@@ -103,11 +116,6 @@ class GeminiProvider(Provider):
         if system:
             body["system_instruction"] = {"parts": [{"text": system}]}
         return self._post(model, body)
-
-
-
-
-
 
 
 PROVIDERS = {
@@ -131,12 +139,19 @@ def get_provider(name: str) -> Provider:
 
 def resolve(stage: str, check: bool = True) -> tuple[Provider, str]:
     """Resolves the provider and model configured for a given pipeline stage."""
-    name = (os.getenv(f"{stage.upper()}_PROVIDER")
+    name = (
+        (
+            os.getenv(f"{stage.upper()}_PROVIDER")
             or os.getenv("LLM_PROVIDER")
-            or "gemini").strip().lower()
+            or "gemini"
+        )
+        .strip()
+        .lower()
+    )
     provider = get_provider(name)
-    model = (os.getenv(f"{stage.upper()}_MODEL") or "").strip() \
-        or DEFAULT_MODELS.get(name, {}).get(stage)
+    model = (os.getenv(f"{stage.upper()}_MODEL") or "").strip() or DEFAULT_MODELS.get(
+        name, {}
+    ).get(stage)
     if not model:
         raise LLMError(f"set {stage.upper()}_MODEL for provider {name!r}")
     if check:

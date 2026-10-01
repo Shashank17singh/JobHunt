@@ -10,11 +10,12 @@ hardcoded date silently ages past `max_age_days` and one day your demo
 returns zero jobs for no visible reason. `_STALE` is the only old one, and
 it is old on purpose.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from .fetch import parse_greenhouse, parse_lever, parse_ashby, Job
+from .fetch import Job, parse_ashby, parse_greenhouse, parse_lever
 
 
 def _ago(days: int) -> datetime:
@@ -36,7 +37,7 @@ def _ashby(days: int) -> str:
     return _ago(days).strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
 
-STALE_DAYS = 280   # comfortably past any sane max_age_days
+STALE_DAYS = 280  # comfortably past any sane max_age_days
 
 _BACKEND_JD = """<p>We are building the control plane for our edge platform.</p>
 <p><strong>What you'll do</strong></p><ul>
@@ -57,105 +58,170 @@ _FRONTEND_JD = """<p>Build delightful UI in React and TypeScript. Own our design
 system, animations and accessibility work.</p>"""
 
 GREENHOUSE = {
-    "acme-edge": {"jobs": [
-        {"id": 5501001, "title": "Software Engineer II, Distributed Systems",
-         "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501001",
-         "location": {"name": "Bangalore, India"},
-         "updated_at": _gh(2), "content": _BACKEND_JD},
-        {"id": 5501002, "title": "Staff Software Engineer, Storage",
-         "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501002",
-         "location": {"name": "Bengaluru, KA"},
-         "updated_at": _gh(3), "content": _STAFF_JD},
-        {"id": 5501003, "title": "Enterprise Account Executive",
-         "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501003",
-         "location": {"name": "Mumbai, India"},
-         "updated_at": _gh(4),
-         "content": "<p>Own a $3M quota selling to CIOs.</p>"},
-        {"id": 5501004, "title": "Backend Engineer, Payments",
-         "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501004",
-         "location": {"name": "San Francisco, CA"},
-         "updated_at": _gh(1), "content": _BACKEND_JD},
-        {"id": 5501005, "title": "Senior Software Engineer, Platform",
-         "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501005",
-         "location": {"name": "Remote - India"},
-         "updated_at": _gh(STALE_DAYS), "content": _BACKEND_JD},
-    ]},
-    "novapay": {"jobs": [
-        {"id": 7702001, "title": "Software Development Engineer, Core Infra",
-         "absolute_url": "https://boards.greenhouse.io/novapay/jobs/7702001",
-         "location": {"name": "Bengaluru, India"},
-         "updated_at": _gh(1),
-         "content": _BACKEND_JD + "<p>Java, Kafka, Postgres. Hybrid, 3 days in office.</p>"},
-        {"id": 7702002, "title": "Frontend Engineer, Design Systems",
-         "absolute_url": "https://boards.greenhouse.io/novapay/jobs/7702002",
-         "location": {"name": "Bengaluru, India"},
-         "updated_at": _gh(2), "content": _FRONTEND_JD},
-    ]},
+    "acme-edge": {
+        "jobs": [
+            {
+                "id": 5501001,
+                "title": "Software Engineer II, Distributed Systems",
+                "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501001",
+                "location": {"name": "Bangalore, India"},
+                "updated_at": _gh(2),
+                "content": _BACKEND_JD,
+            },
+            {
+                "id": 5501002,
+                "title": "Staff Software Engineer, Storage",
+                "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501002",
+                "location": {"name": "Bengaluru, KA"},
+                "updated_at": _gh(3),
+                "content": _STAFF_JD,
+            },
+            {
+                "id": 5501003,
+                "title": "Enterprise Account Executive",
+                "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501003",
+                "location": {"name": "Mumbai, India"},
+                "updated_at": _gh(4),
+                "content": "<p>Own a $3M quota selling to CIOs.</p>",
+            },
+            {
+                "id": 5501004,
+                "title": "Backend Engineer, Payments",
+                "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501004",
+                "location": {"name": "San Francisco, CA"},
+                "updated_at": _gh(1),
+                "content": _BACKEND_JD,
+            },
+            {
+                "id": 5501005,
+                "title": "Senior Software Engineer, Platform",
+                "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501005",
+                "location": {"name": "Remote - India"},
+                "updated_at": _gh(STALE_DAYS),
+                "content": _BACKEND_JD,
+            },
+        ]
+    },
+    "novapay": {
+        "jobs": [
+            {
+                "id": 7702001,
+                "title": "Software Development Engineer, Core Infra",
+                "absolute_url": "https://boards.greenhouse.io/novapay/jobs/7702001",
+                "location": {"name": "Bengaluru, India"},
+                "updated_at": _gh(1),
+                "content": _BACKEND_JD
+                + "<p>Java, Kafka, Postgres. Hybrid, 3 days in office.</p>",
+            },
+            {
+                "id": 7702002,
+                "title": "Frontend Engineer, Design Systems",
+                "absolute_url": "https://boards.greenhouse.io/novapay/jobs/7702002",
+                "location": {"name": "Bengaluru, India"},
+                "updated_at": _gh(2),
+                "content": _FRONTEND_JD,
+            },
+        ]
+    },
 }
 
 LEVER = {
     "quantstack": [
-        {"id": "a1b2c3d4-1111-4aaa-9999-000000000001",
-         "text": "Backend Engineer (Go)",
-         "hostedUrl": "https://jobs.lever.co/quantstack/a1b2c3d4-1111-4aaa-9999-000000000001",
-         "applyUrl": "https://jobs.lever.co/quantstack/a1b2c3d4-1111-4aaa-9999-000000000001/apply",
-         "categories": {"location": "Bangalore", "team": "Infrastructure",
-                        "commitment": "Full-time"},
-         "createdAt": _lever(2),
-         "descriptionPlain": "We run a real-time market data pipeline in Go. "
-                             "You will own ingestion, fan-out and the storage layer.",
-         "lists": [{"text": "Requirements",
+        {
+            "id": "a1b2c3d4-1111-4aaa-9999-000000000001",
+            "text": "Backend Engineer (Go)",
+            "hostedUrl": "https://jobs.lever.co/quantstack/a1b2c3d4-1111-4aaa-9999-000000000001",
+            "applyUrl": "https://jobs.lever.co/quantstack/a1b2c3d4-1111-4aaa-9999-000000000001/apply",
+            "categories": {
+                "location": "Bangalore",
+                "team": "Infrastructure",
+                "commitment": "Full-time",
+            },
+            "createdAt": _lever(2),
+            "descriptionPlain": "We run a real-time market data pipeline in Go. "
+            "You will own ingestion, fan-out and the storage layer.",
+            "lists": [
+                {
+                    "text": "Requirements",
                     "content": "<li>2-5 years backend experience</li>"
-                               "<li>Go or Java, strong CS fundamentals</li>"
-                               "<li>Comfort with Kubernetes, gRPC, Kafka</li>"}],
-         "additionalPlain": "We interview with one system design round and one "
-                            "pair-programming round. No take-home."},
-        {"id": "a1b2c3d4-1111-4aaa-9999-000000000002",
-         "text": "Engineering Manager, Platform",
-         "hostedUrl": "https://jobs.lever.co/quantstack/a1b2c3d4-1111-4aaa-9999-000000000002",
-         "categories": {"location": "Bangalore", "team": "Platform",
-                        "commitment": "Full-time"},
-         "createdAt": _lever(3),
-         "descriptionPlain": "Lead a team of 8 engineers. 5+ years of people management required.",
-         "lists": []},
-        {"id": "a1b2c3d4-1111-4aaa-9999-000000000003",
-         "text": "Site Reliability Engineer",
-         "hostedUrl": "https://jobs.lever.co/quantstack/a1b2c3d4-1111-4aaa-9999-000000000003",
-         "categories": {"location": "Remote (India)", "team": "SRE",
-                        "commitment": "Full-time"},
-         "createdAt": _lever(1),
-         "descriptionPlain": "Own SLOs, on-call and incident response for a "
-                             "multi-region Kubernetes fleet. Terraform, Prometheus, Go.",
-         "lists": [{"text": "Nice to have",
-                    "content": "<li>CDN or edge networking background</li>"}]},
+                    "<li>Go or Java, strong CS fundamentals</li>"
+                    "<li>Comfort with Kubernetes, gRPC, Kafka</li>",
+                }
+            ],
+            "additionalPlain": "We interview with one system design round and one "
+            "pair-programming round. No take-home.",
+        },
+        {
+            "id": "a1b2c3d4-1111-4aaa-9999-000000000002",
+            "text": "Engineering Manager, Platform",
+            "hostedUrl": "https://jobs.lever.co/quantstack/a1b2c3d4-1111-4aaa-9999-000000000002",
+            "categories": {
+                "location": "Bangalore",
+                "team": "Platform",
+                "commitment": "Full-time",
+            },
+            "createdAt": _lever(3),
+            "descriptionPlain": "Lead a team of 8 engineers. 5+ years of people management required.",
+            "lists": [],
+        },
+        {
+            "id": "a1b2c3d4-1111-4aaa-9999-000000000003",
+            "text": "Site Reliability Engineer",
+            "hostedUrl": "https://jobs.lever.co/quantstack/a1b2c3d4-1111-4aaa-9999-000000000003",
+            "categories": {
+                "location": "Remote (India)",
+                "team": "SRE",
+                "commitment": "Full-time",
+            },
+            "createdAt": _lever(1),
+            "descriptionPlain": "Own SLOs, on-call and incident response for a "
+            "multi-region Kubernetes fleet. Terraform, Prometheus, Go.",
+            "lists": [
+                {
+                    "text": "Nice to have",
+                    "content": "<li>CDN or edge networking background</li>",
+                }
+            ],
+        },
     ],
 }
 
 ASHBY = {
-    "helioscale": {"jobs": [
-        {"id": "9f8e7d6c-2222-4bbb-8888-000000000001",
-         "title": "Software Engineer, Networking",
-         "location": "Bengaluru, India", "isListed": True,
-         "jobUrl": "https://jobs.ashbyhq.com/helioscale/9f8e7d6c-2222-4bbb-8888-000000000001",
-         "publishedAt": _ashby(1),
-         "compensation": {"compensationTierSummary": "₹32L – ₹48L"},
-         "descriptionPlain": "Work on our anycast network and HTTP proxy layer. "
-                             "You will tune TCP congestion control, build DNS "
-                             "steering logic and reduce p99 latency across POPs. "
-                             "We use Rust and Go. 2+ years experience."},
-        {"id": "9f8e7d6c-2222-4bbb-8888-000000000002",
-         "title": "Software Engineer, Networking",
-         "location": "Bengaluru, India", "isListed": False,
-         "jobUrl": "https://jobs.ashbyhq.com/helioscale/unlisted",
-         "publishedAt": _ashby(1),
-         "descriptionPlain": "Draft posting that should never surface."},
-        {"id": "9f8e7d6c-2222-4bbb-8888-000000000003",
-         "title": "Data Scientist, Growth",
-         "location": "Bengaluru, India", "isListed": True,
-         "jobUrl": "https://jobs.ashbyhq.com/helioscale/9f8e7d6c-2222-4bbb-8888-000000000003",
-         "publishedAt": _ashby(2),
-         "descriptionHtml": "<p>Causal inference, experimentation, SQL &amp; Python.</p>"},
-    ]},
+    "helioscale": {
+        "jobs": [
+            {
+                "id": "9f8e7d6c-2222-4bbb-8888-000000000001",
+                "title": "Software Engineer, Networking",
+                "location": "Bengaluru, India",
+                "isListed": True,
+                "jobUrl": "https://jobs.ashbyhq.com/helioscale/9f8e7d6c-2222-4bbb-8888-000000000001",
+                "publishedAt": _ashby(1),
+                "compensation": {"compensationTierSummary": "₹32L – ₹48L"},
+                "descriptionPlain": "Work on our anycast network and HTTP proxy layer. "
+                "You will tune TCP congestion control, build DNS "
+                "steering logic and reduce p99 latency across POPs. "
+                "We use Rust and Go. 2+ years experience.",
+            },
+            {
+                "id": "9f8e7d6c-2222-4bbb-8888-000000000002",
+                "title": "Software Engineer, Networking",
+                "location": "Bengaluru, India",
+                "isListed": False,
+                "jobUrl": "https://jobs.ashbyhq.com/helioscale/unlisted",
+                "publishedAt": _ashby(1),
+                "descriptionPlain": "Draft posting that should never surface.",
+            },
+            {
+                "id": "9f8e7d6c-2222-4bbb-8888-000000000003",
+                "title": "Data Scientist, Growth",
+                "location": "Bengaluru, India",
+                "isListed": True,
+                "jobUrl": "https://jobs.ashbyhq.com/helioscale/9f8e7d6c-2222-4bbb-8888-000000000003",
+                "publishedAt": _ashby(2),
+                "descriptionHtml": "<p>Causal inference, experimentation, SQL &amp; Python.</p>",
+            },
+        ]
+    },
 }
 
 
@@ -167,5 +233,7 @@ def fetch_all_mock(companies=None) -> list[Job]:
         jobs += parse_lever(slug, slug.title(), body)
     for slug, body in ASHBY.items():
         jobs += parse_ashby(slug, slug.title(), body)
-    print(f"  [mock] {len(jobs)} postings from {len(GREENHOUSE) + len(LEVER) + len(ASHBY)} boards")
+    print(
+        f"  [mock] {len(jobs)} postings from {len(GREENHOUSE) + len(LEVER) + len(ASHBY)} boards"
+    )
     return jobs

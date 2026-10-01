@@ -3,8 +3,9 @@ from __future__ import annotations
 import html
 import re
 import time
-from dataclasses import dataclass, asdict, field
-from typing import Any, Iterable
+from collections.abc import Iterable
+from dataclasses import asdict, dataclass, field
+from typing import Any
 
 import requests
 
@@ -21,7 +22,9 @@ def strip_html(raw: str | None) -> str:
     if not raw:
         return ""
     text = html.unescape(raw)
-    text = re.sub(r"<\s*(br|/p|/div|/li|/h[1-6])\s*/?>", "\n", text, flags=re.I)
+    text = re.sub(
+        r"<\s*(br|/p|/div|/li|/h[1-6])\s*/?>", "\n", text, flags=re.IGNORECASE
+    )
     text = _TAG.sub(" ", text)
     text = html.unescape(text)
     text = _WS.sub(" ", text)
@@ -31,7 +34,7 @@ def strip_html(raw: str | None) -> str:
 
 @dataclass
 class Job:
-    job_id: str          # Stable global ID for deduplication: "<ats>:<slug>:<id>"
+    job_id: str  # Stable global ID for deduplication: "<ats>:<slug>:<id>"
     ats: str
     company: str
     title: str
@@ -53,26 +56,28 @@ def parse_greenhouse(slug: str, company: str, body: Any) -> list[Job]:
     out = []
     for j in (body or {}).get("jobs", []):
         loc = (j.get("location") or {}).get("name") or ""
-        out.append(Job(
-            job_id=f"greenhouse:{slug}:{j.get('id')}",
-            ats="greenhouse",
-            company=company,
-            title=(j.get("title") or "").strip(),
-            location=loc.strip(),
-            url=j.get("absolute_url") or "",
-            description=strip_html(j.get("content")),
-            posted_at=j.get("updated_at") or j.get("first_published"),
-        ))
+        out.append(
+            Job(
+                job_id=f"greenhouse:{slug}:{j.get('id')}",
+                ats="greenhouse",
+                company=company,
+                title=(j.get("title") or "").strip(),
+                location=loc.strip(),
+                url=j.get("absolute_url") or "",
+                description=strip_html(j.get("content")),
+                posted_at=j.get("updated_at") or j.get("first_published"),
+            )
+        )
     return out
 
 
 def parse_lever(slug: str, company: str, body: Any) -> list[Job]:
     """Parses jobs from a Lever ATS API response."""
     out = []
-    for j in (body or []):
+    for j in body or []:
         cats = j.get("categories") or {}
         chunks = [j.get("descriptionPlain") or strip_html(j.get("description"))]
-        for lst in (j.get("lists") or []):
+        for lst in j.get("lists") or []:
             chunks.append(str(lst.get("text") or ""))
             chunks.append(strip_html(lst.get("content")))
         chunks.append(j.get("additionalPlain") or strip_html(j.get("additional")))
@@ -80,17 +85,19 @@ def parse_lever(slug: str, company: str, body: Any) -> list[Job]:
         posted = None
         if isinstance(ts, (int, float)):
             posted = time.strftime("%Y-%m-%d", time.gmtime(ts / 1000))
-        out.append(Job(
-            job_id=f"lever:{slug}:{j.get('id')}",
-            ats="lever",
-            company=company,
-            title=(j.get("text") or "").strip(),
-            location=(cats.get("location") or "").strip(),
-            url=j.get("hostedUrl") or j.get("applyUrl") or "",
-            description="\n\n".join(c for c in chunks if c).strip(),
-            posted_at=posted,
-            salary=cats.get("commitment"),
-        ))
+        out.append(
+            Job(
+                job_id=f"lever:{slug}:{j.get('id')}",
+                ats="lever",
+                company=company,
+                title=(j.get("text") or "").strip(),
+                location=(cats.get("location") or "").strip(),
+                url=j.get("hostedUrl") or j.get("applyUrl") or "",
+                description="\n\n".join(c for c in chunks if c).strip(),
+                posted_at=posted,
+                salary=cats.get("commitment"),
+            )
+        )
     return out
 
 
@@ -105,29 +112,45 @@ def parse_ashby(slug: str, company: str, body: Any) -> list[Job]:
         summary = comp.get("compensationTierSummary") or comp.get("summaryComponents")
         if isinstance(summary, str):
             salary = summary
-        out.append(Job(
-            job_id=f"ashby:{slug}:{j.get('id')}",
-            ats="ashby",
-            company=company,
-            title=(j.get("title") or "").strip(),
-            location=(j.get("location") or "").strip(),
-            url=j.get("jobUrl") or j.get("applyUrl") or "",
-            description=(j.get("descriptionPlain") or strip_html(j.get("descriptionHtml")) or "").strip(),
-            posted_at=j.get("publishedAt"),
-            salary=salary,
-        ))
+        out.append(
+            Job(
+                job_id=f"ashby:{slug}:{j.get('id')}",
+                ats="ashby",
+                company=company,
+                title=(j.get("title") or "").strip(),
+                location=(j.get("location") or "").strip(),
+                url=j.get("jobUrl") or j.get("applyUrl") or "",
+                description=(
+                    j.get("descriptionPlain")
+                    or strip_html(j.get("descriptionHtml"))
+                    or ""
+                ).strip(),
+                posted_at=j.get("publishedAt"),
+                salary=salary,
+            )
+        )
     return out
 
 
 ENDPOINTS = {
-    "greenhouse": ("https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true", parse_greenhouse),
-    "lever":      ("https://api.lever.co/v0/postings/{slug}?mode=json", parse_lever),
-    "ashby":      ("https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true", parse_ashby),
+    "greenhouse": (
+        "https://boards-api.greenhouse.io/v1/boards/{slug}/jobs?content=true",
+        parse_greenhouse,
+    ),
+    "lever": ("https://api.lever.co/v0/postings/{slug}?mode=json", parse_lever),
+    "ashby": (
+        "https://api.ashbyhq.com/posting-api/job-board/{slug}?includeCompensation=true",
+        parse_ashby,
+    ),
 }
 
 
-def fetch_board(ats: str, slug: str, company: str | None = None,
-                session: requests.Session | None = None) -> list[Job]:
+def fetch_board(
+    ats: str,
+    slug: str,
+    company: str | None = None,
+    session: requests.Session | None = None,
+) -> list[Job]:
     """Fetches and parses job listings from a specific ATS board."""
     if ats not in ENDPOINTS:
         raise ValueError(f"unknown ATS: {ats}")
@@ -151,7 +174,9 @@ def fetch_all(companies: Iterable[dict], sleep: float = 0.25) -> list[Job]:
     for c in companies:
         got = fetch_board(c["ats"], c["slug"], c.get("name"), session=session)
         if got:
-            print(f"  {c.get('name') or c['slug']:<28} {len(got):>4} jobs  ({c['ats']})")
+            print(
+                f"  {c.get('name') or c['slug']:<28} {len(got):>4} jobs  ({c['ats']})"
+            )
         jobs.extend(got)
         time.sleep(sleep)
     return jobs

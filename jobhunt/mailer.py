@@ -1,4 +1,5 @@
 """Send the digest over SMTP. Gmail: use an App Password, not your login."""
+
 from __future__ import annotations
 
 import os
@@ -7,7 +8,9 @@ from email.message import EmailMessage
 from pathlib import Path
 
 
-def send(subject: str, html_body: str, attachments: list[str | os.PathLike] | None = None) -> None:
+def send(
+    subject: str, html_body: str, attachments: list[str | os.PathLike] | None = None
+) -> None:
     """Sends an HTML email with optional attachments using SMTP."""
     host = os.getenv("SMTP_HOST", "smtp.gmail.com")
     port = int(os.getenv("SMTP_PORT", "587"))
@@ -30,7 +33,9 @@ def send(subject: str, html_body: str, attachments: list[str | os.PathLike] | No
                     content = f.read()
                 maintype = "application"
                 subtype = "pdf" if path.suffix.lower() == ".pdf" else "octet-stream"
-                msg.add_attachment(content, maintype=maintype, subtype=subtype, filename=path.name)
+                msg.add_attachment(
+                    content, maintype=maintype, subtype=subtype, filename=path.name
+                )
 
     with smtplib.SMTP(host, port, timeout=30) as s:
         s.starttls()
