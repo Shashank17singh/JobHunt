@@ -91,7 +91,6 @@ def cmd_run(args) -> int:
     store = Store(cfg.get("seen_file", "seen.json"))
     filters = cfg.get("filters", {}) or {}
 
-    # 1. Fetch postings from ATS APIs
     print("\n[1/5] fetching boards")
     if args.mock:
         jobs = fetch_all_mock()
@@ -106,7 +105,6 @@ def cmd_run(args) -> int:
         print("no postings fetched — check the slugs in companies.yaml")
         return 1
 
-    # 2. Deterministic prefilter and deduplication
     print("\n[2/5] filtering")
     jobs = prefilter(jobs, filters)
     passed_filters = len(jobs)
@@ -123,7 +121,6 @@ def cmd_run(args) -> int:
         print(f"\nnothing new today. preview: {path}")
         return 0
 
-    # 3. LLM Screening
     scorer = "keyword" if args.scorer == "keyword" else "llm"
     if scorer == "keyword":
         print(f"\n[3/5] screening {len(jobs)} jobs (keyword stub — DEV ONLY)")
@@ -140,7 +137,6 @@ def cmd_run(args) -> int:
                    jd_chars=int(cfg.get("screen_jd_chars", 1400)),
                    provider=provider, model=model)
 
-    # Ensure at least one batch succeeded to prevent marking jobs as seen improperly.
     if scorer == "llm" and not any(j.score is not None for j in jobs):
         print("\n! screening scored nothing: every batch failed.\n"
               "  Not recording these jobs, so the next run retries them.\n"
@@ -153,7 +149,6 @@ def cmd_run(args) -> int:
                        key=lambda j: j.score or 0, reverse=True)[:top_n]
     print(f"  {len(shortlist)} scored >= {threshold}")
 
-    # 4. LLM Drafting
     print(f"\n[4/5] drafting kits for {len(shortlist)}")
     attachments = []
     if not shortlist:
@@ -197,7 +192,6 @@ def cmd_run(args) -> int:
         except LLMError as e:
             print(f"  ! drafting unavailable: {e}")
 
-    # 5. Digest Generation
     print("\n[5/5] digest")
     subject, doc = digest_mod.build(shortlist, scanned, candidates, store.stats())
     path = digest_mod.write(doc, cfg.get("digest_file", "out/digest.html"))

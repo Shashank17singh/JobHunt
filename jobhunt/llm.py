@@ -26,7 +26,6 @@ def parse_json(raw: str) -> Any:
         return json.loads(cleaned)
     except json.JSONDecodeError:
         pass
-        # Discard any preamble or trailing commentary from the model output
     candidates = []
     for opener, closer in (("[", "]"), ("{", "}")):
         i, k = cleaned.find(opener), cleaned.rfind(closer)
@@ -207,7 +206,6 @@ def draft(jobs: list[Job], profile: dict, jd_chars: int = 6000,
             kit = parse_json(raw)
             if not isinstance(kit, dict):
                 raise ValueError("draft did not return a JSON object")
-            # Normalise the structure for the digest template
             j.draft = {
                 "fit_summary": str(kit.get("fit_summary") or ""),
                 "required_skills": [str(s) for s in (kit.get("required_skills") or [])],

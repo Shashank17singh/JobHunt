@@ -9,11 +9,9 @@ def main():
     env['GIT_COMMITTER_NAME'] = 'Shashank17singh'
     env['GIT_COMMITTER_EMAIL'] = 'shashanksingh1709@gmail.com'
     
-    # Start rebase
     p = subprocess.Popen(['git', 'rebase', '-i', '--root'], env=env)
     p.wait()
     
-    # Loop while rebase is in progress
     while True:
         res = subprocess.run(['git', 'status'], capture_output=True, text=True)
         if 'interactive rebase in progress' not in res.stdout.lower() and 'rebase in progress' not in res.stdout.lower():

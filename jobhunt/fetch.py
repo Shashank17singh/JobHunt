@@ -40,7 +40,6 @@ class Job:
     description: str
     posted_at: str | None = None
     salary: str | None = None
-    # Populated later by the pipeline
     score: float | None = None
     reason: str | None = None
     draft: dict[str, Any] = field(default_factory=dict)
@@ -72,7 +71,6 @@ def parse_lever(slug: str, company: str, body: Any) -> list[Job]:
     out = []
     for j in (body or []):
         cats = j.get("categories") or {}
-        # Lever splits the JD across descriptionPlain and a 'lists' array.
         chunks = [j.get("descriptionPlain") or strip_html(j.get("description"))]
         for lst in (j.get("lists") or []):
             chunks.append(str(lst.get("text") or ""))

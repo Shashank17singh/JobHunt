@@ -255,8 +255,6 @@ def test_keyword_screen_stays_in_range_with_an_empty_profile():
     assert 0 <= jobs[0].score <= 10
 
 
-# ---------------------------------------------------------------------------
-
 ENV_KEYS = ["LLM_PROVIDER", "SCREEN_PROVIDER", "DRAFT_PROVIDER",
             "SCREEN_MODEL", "DRAFT_MODEL", "GEMINI_API_KEY",
             "OPENAI_API_KEY"]

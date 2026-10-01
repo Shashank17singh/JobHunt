@@ -58,23 +58,19 @@ system, animations and accessibility work.</p>"""
 
 GREENHOUSE = {
     "acme-edge": {"jobs": [
-        # Test Case: Valid job - matching seniority, location, and within age limit
         {"id": 5501001, "title": "Software Engineer II, Distributed Systems",
          "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501001",
          "location": {"name": "Bangalore, India"},
          "updated_at": _gh(2), "content": _BACKEND_JD},
-        # Test Case: Invalid job - incorrect seniority
         {"id": 5501002, "title": "Staff Software Engineer, Storage",
          "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501002",
          "location": {"name": "Bengaluru, KA"},
          "updated_at": _gh(3), "content": _STAFF_JD},
-        # Test Case: Invalid job - incorrect function
         {"id": 5501003, "title": "Enterprise Account Executive",
          "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501003",
          "location": {"name": "Mumbai, India"},
          "updated_at": _gh(4),
          "content": "<p>Own a $3M quota selling to CIOs.</p>"},
-        # Test Case: Invalid job - incorrect location and not remote
         {"id": 5501004, "title": "Backend Engineer, Payments",
          "absolute_url": "https://boards.greenhouse.io/acme-edge/jobs/5501004",
          "location": {"name": "San Francisco, CA"},
