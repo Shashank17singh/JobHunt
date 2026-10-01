@@ -32,6 +32,7 @@ def _load_env(path: str = ".env") -> None:
 
 
 def _cfg(path: str | Path) -> dict:
+    """Loads the YAML configuration file."""
     p = Path(path)
     if not p.exists():
         raise SystemExit(f"config not found: {p}  (run from the project root)")
@@ -39,6 +40,7 @@ def _cfg(path: str | Path) -> dict:
 
 
 def _load_profile(cfg: dict, allow_sample: bool) -> dict | None:
+    """Loads the user's profile from disk, falling back to a sample if allowed."""
     path = Path(cfg.get("profile_file", "profile.json"))
     if path.exists():
         return json.loads(path.read_text(encoding="utf-8"))
@@ -55,6 +57,7 @@ def _load_profile(cfg: dict, allow_sample: bool) -> dict | None:
 
 
 def cmd_profile(args) -> int:
+    """Command to extract and build a profile from a resume file."""
     src = Path(args.resume)
     if not src.exists():
         print(f"resume not found: {src}")
@@ -80,6 +83,7 @@ def cmd_profile(args) -> int:
 
 
 def cmd_run(args) -> int:
+    """Command to execute the daily pipeline of fetching, filtering, screening, and drafting."""
     cfg = _cfg(args.config)
     profile = _load_profile(cfg, allow_sample=args.mock)
     if profile is None:
@@ -219,8 +223,8 @@ def cmd_run(args) -> int:
     return 0
 
 
-# ------------------------------------------------------------------- misc --
 def cmd_applied(args) -> int:
+    """Command to mark a specific job ID as applied."""
     store = Store(_cfg(args.config).get("seen_file", "seen.json"))
     ok = store.mark_applied(args.job_id)
     print("marked applied" if ok else f"unknown job_id: {args.job_id}")
@@ -228,6 +232,7 @@ def cmd_applied(args) -> int:
 
 
 def cmd_stats(args) -> int:
+    """Command to print application tracking statistics and export to CSV."""
     cfg = _cfg(args.config)
     store = Store(cfg.get("seen_file", "seen.json"))
     print(json.dumps(store.stats(), indent=2))
@@ -236,6 +241,7 @@ def cmd_stats(args) -> int:
 
 
 def main(argv=None) -> int:
+    """Main entrypoint for the CLI application."""
     _load_env()
     p = argparse.ArgumentParser(
         prog="jobhunt",

@@ -8,6 +8,7 @@ from pathlib import Path
 
 
 def send(subject: str, html_body: str, attachments: list[str | os.PathLike] | None = None) -> None:
+    """Sends an HTML email with optional attachments using SMTP."""
     host = os.getenv("SMTP_HOST", "smtp.gmail.com")
     port = int(os.getenv("SMTP_PORT", "587"))
     user = os.environ["SMTP_USER"]

@@ -45,6 +45,7 @@ class Provider:
 
     @staticmethod
     def _env(key: str) -> str:
+        """Helper to fetch an environment variable and raise an error if not set."""
         value = (os.environ.get(key) or "").strip()
         if not value:
             raise LLMError(f"{key} is not set (see .env.example)")
@@ -52,11 +53,13 @@ class Provider:
 
 
 class GeminiProvider(Provider):
+    """Google Gemini provider implementation."""
     name = "gemini"
     required_env = "GEMINI_API_KEY"
     BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 
     def _post(self, model: str, body: dict) -> str:
+        """Sends a POST request to the Gemini API with retries for rate limits."""
         import time
         for attempt in range(5):
             r = requests.post(
@@ -120,6 +123,7 @@ DEFAULT_MODELS = {
 
 
 def get_provider(name: str) -> Provider:
+    """Instantiates a provider by name."""
     try:
         return PROVIDERS[name]()
     except KeyError:
@@ -129,6 +133,7 @@ def get_provider(name: str) -> Provider:
 
 
 def resolve(stage: str, check: bool = True) -> tuple[Provider, str]:
+    """Resolves the provider and model configured for a given pipeline stage."""
     name = (os.getenv(f"{stage.upper()}_PROVIDER")
             or os.getenv("LLM_PROVIDER")
             or "gemini").strip().lower()

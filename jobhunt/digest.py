@@ -16,6 +16,7 @@ ACCENT = "#7c9cff"
 
 
 def _badge(score: float | None) -> str:
+    """Generates an HTML badge for the job score with color coding."""
     s = score or 0
     color = "#3fb950" if s >= 8.5 else "#d29922" if s >= 7 else "#8b949e"
     return (f'<span style="background:{color};color:#0f1115;font-weight:700;'
@@ -23,6 +24,7 @@ def _badge(score: float | None) -> str:
 
 
 def _bullets(items: list[str]) -> str:
+    """Formats a list of strings into an HTML unordered list."""
     if not items:
         return ""
     lis = "".join(
@@ -32,6 +34,7 @@ def _bullets(items: list[str]) -> str:
 
 
 def _section(label: str, body: str) -> str:
+    """Wraps HTML content in a labeled section."""
     if not body:
         return ""
     return (f'<div style="margin-top:14px;">'
@@ -40,6 +43,7 @@ def _section(label: str, body: str) -> str:
 
 
 def _card(j: Job) -> str:
+    """Builds an HTML card summarizing a job and its draft kit."""
     d = j.draft or {}
     meta = " · ".join(x for x in [j.company, j.location or "—", j.ats] if x)
 
@@ -78,6 +82,7 @@ def _card(j: Job) -> str:
 
 
 def build(jobs: list[Job], scanned: int, candidates: int, stats: dict) -> tuple[str, str]:
+    """Builds the complete HTML digest for the daily run."""
     today = datetime.now().strftime("%d %b %Y")
     subject = (f"{len(jobs)} job{'s' if len(jobs) != 1 else ''} worth your time — {today}"
                if jobs else f"No new matches today — {today}")
@@ -109,6 +114,7 @@ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 
 
 def write(html_doc: str, path: str | Path = "out/digest.html") -> Path:
+    """Writes the generated HTML digest to disk."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(html_doc, encoding="utf-8")
