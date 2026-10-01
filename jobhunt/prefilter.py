@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 import re
 from datetime import datetime, timedelta, timezone
 
@@ -11,7 +10,7 @@ REMOTE_HINTS = ("remote", "anywhere", "work from home", "wfh", "distributed")
 
 def _any_match(patterns: list[str], text: str) -> bool:
     """Checks if any regex pattern matches the given text."""
-    return any(re.search(p, text, re.I) for p in patterns)
+    return any(re.search(p, text, re.IGNORECASE) for p in patterns)
 
 
 def _parse_date(value: str | None) -> datetime | None:
@@ -58,6 +57,8 @@ def prefilter(jobs: list[Job], cfg: dict) -> list[Job]:
 
         kept.append(j)
 
-    print(f"  prefilter: {len(jobs)} -> {len(kept)} "
-          f"(dropped title={stats['title']} location={stats['location']} stale={stats['age']})")
+    print(
+        f"  prefilter: {len(jobs)} -> {len(kept)} "
+        f"(dropped title={stats['title']} location={stats['location']} stale={stats['age']})"
+    )
     return kept

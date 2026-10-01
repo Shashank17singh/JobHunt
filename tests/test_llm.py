@@ -6,6 +6,7 @@ Asserts the four things that actually break in production:
   3. the JSON parser survives fences, preambles and object-or-array replies
   4. scores land on the right job, and a bad batch does not kill the run
 """
+
 from __future__ import annotations
 
 import json
@@ -20,8 +21,12 @@ from jobhunt import llm, providers
 from jobhunt.fetch import Job
 from jobhunt.providers import LLMError, Provider
 
-PROFILE = {"core_skills": ["Go", "Kubernetes"], "target_titles": ["Backend Engineer"],
-           "seniority": "mid", "years_experience": 3}
+PROFILE = {
+    "core_skills": ["Go", "Kubernetes"],
+    "target_titles": ["Backend Engineer"],
+    "seniority": "mid",
+    "years_experience": 3,
+}
 
 
 class StubProvider(Provider):
@@ -34,8 +39,15 @@ class StubProvider(Provider):
         self.calls: list[dict] = []
 
     def complete(self, model, system, user, max_tokens, json_mode=False):
-        self.calls.append({"model": model, "system": system, "user": user,
-                           "max_tokens": max_tokens, "json_mode": json_mode})
+        self.calls.append(
+            {
+                "model": model,
+                "system": system,
+                "user": user,
+                "max_tokens": max_tokens,
+                "json_mode": json_mode,
+            }
+        )
         if not self.replies:
             return "[]"
         reply = self.replies.pop(0)
@@ -49,26 +61,38 @@ class StubProvider(Provider):
 
 
 def make_jobs(n: int, desc: str = "Go and Kubernetes at scale.") -> list[Job]:
-    return [Job(job_id=f"greenhouse:acme:{i}", ats="greenhouse", company="Acme",
-                title=f"Backend Engineer {i}", location="Bangalore",
-                url=f"https://example.com/{i}", description=desc)
-            for i in range(n)]
+    return [
+        Job(
+            job_id=f"greenhouse:acme:{i}",
+            ats="greenhouse",
+            company="Acme",
+            title=f"Backend Engineer {i}",
+            location="Bangalore",
+            url=f"https://example.com/{i}",
+            description=desc,
+        )
+        for i in range(n)
+    ]
 
 
 def scores_reply(jobs, score=8.0, reason="fits"):
-    return json.dumps([{"job_id": j.job_id, "score": score, "reason": reason}
-                       for j in jobs])
+    return json.dumps(
+        [{"job_id": j.job_id, "score": score, "reason": reason} for j in jobs]
+    )
 
 
-@pytest.mark.parametrize("raw,expected", [
-    ('[{"a": 1}]', [{"a": 1}]),
-    ('```json\n[{"a": 1}]\n```', [{"a": 1}]),
-    ('```\n[{"a": 1}]\n```', [{"a": 1}]),
-    ('Here is the JSON you asked for:\n[{"a": 1}]', [{"a": 1}]),
-    ('[{"a": 1}]\n\nLet me know if you need anything else!', [{"a": 1}]),
-    ('```json\nSure —\n{"a": 1}\n```\nDone.', {"a": 1}),
-    ('  {"a": 1}  ', {"a": 1}),
-])
+@pytest.mark.parametrize(
+    "raw,expected",
+    [
+        ('[{"a": 1}]', [{"a": 1}]),
+        ('```json\n[{"a": 1}]\n```', [{"a": 1}]),
+        ('```\n[{"a": 1}]\n```', [{"a": 1}]),
+        ('Here is the JSON you asked for:\n[{"a": 1}]', [{"a": 1}]),
+        ('[{"a": 1}]\n\nLet me know if you need anything else!', [{"a": 1}]),
+        ('```json\nSure —\n{"a": 1}\n```\nDone.', {"a": 1}),
+        ('  {"a": 1}  ', {"a": 1}),
+    ],
+)
 def test_parse_json_survives_real_model_habits(raw, expected):
     assert llm.parse_json(raw) == expected
 
@@ -87,7 +111,7 @@ def test_as_list_accepts_array_wrapped_object_and_bare_object():
 
 def test_screen_splits_into_batches_of_the_configured_size():
     jobs = make_jobs(20)
-    stub = StubProvider([scores_reply(jobs[i:i + 8]) for i in (0, 8, 16)])
+    stub = StubProvider([scores_reply(jobs[i : i + 8]) for i in (0, 8, 16)])
 
     llm.screen(jobs, PROFILE, batch_size=8, provider=stub, model="m")
 
@@ -104,7 +128,7 @@ def test_screen_makes_one_call_when_everything_fits_in_a_batch():
 
 def test_screen_batch_size_zero_does_not_hang():
     jobs = make_jobs(3)
-    stub = StubProvider([scores_reply(jobs[i:i + 1]) for i in range(3)])
+    stub = StubProvider([scores_reply(jobs[i : i + 1]) for i in range(3)])
     llm.screen(jobs, PROFILE, batch_size=0, provider=stub, model="m")
     assert len(stub.calls) == 3
 
@@ -117,13 +141,17 @@ def test_screen_truncates_the_jd_before_sending():
 
     assert len(stub.payload(0)[0]["description"]) == 1400
     assert "x" * 1401 not in stub.calls[0]["user"]
-    assert jobs[0].description == "x" * 9000   # the Job itself is untouched
+    assert jobs[0].description == "x" * 9000  # the Job itself is untouched
 
 
 def test_draft_truncates_at_a_larger_limit():
     jobs = make_jobs(1, desc="y" * 20000)
-    stub = StubProvider(['{"fit_summary":"ok","tailored_bullets":[],"gaps":[],'
-                         '"cover_note":"","questions_to_ask":[]}'])
+    stub = StubProvider(
+        [
+            '{"fit_summary":"ok","tailored_bullets":[],"gaps":[],'
+            '"cover_note":"","questions_to_ask":[]}'
+        ]
+    )
 
     llm.draft(jobs, PROFILE, jd_chars=6000, provider=stub, model="m")
 
@@ -134,11 +162,17 @@ def test_draft_truncates_at_a_larger_limit():
 
 def test_scores_land_on_the_right_jobs_even_when_returned_out_of_order():
     jobs = make_jobs(3)
-    stub = StubProvider([json.dumps([
-        {"job_id": jobs[2].job_id, "score": 9.5, "reason": "third"},
-        {"job_id": jobs[0].job_id, "score": 4.0, "reason": "first"},
-        {"job_id": jobs[1].job_id, "score": 7.5, "reason": "second"},
-    ])])
+    stub = StubProvider(
+        [
+            json.dumps(
+                [
+                    {"job_id": jobs[2].job_id, "score": 9.5, "reason": "third"},
+                    {"job_id": jobs[0].job_id, "score": 4.0, "reason": "first"},
+                    {"job_id": jobs[1].job_id, "score": 7.5, "reason": "second"},
+                ]
+            )
+        ]
+    )
 
     llm.screen(jobs, PROFILE, batch_size=8, provider=stub, model="m")
 
@@ -148,10 +182,20 @@ def test_scores_land_on_the_right_jobs_even_when_returned_out_of_order():
 
 def test_unknown_job_ids_in_the_reply_are_ignored():
     jobs = make_jobs(2)
-    stub = StubProvider([json.dumps([
-        {"job_id": "greenhouse:acme:0", "score": 8, "reason": "ok"},
-        {"job_id": "hallucinated:job:999", "score": 10, "reason": "not real"},
-    ])])
+    stub = StubProvider(
+        [
+            json.dumps(
+                [
+                    {"job_id": "greenhouse:acme:0", "score": 8, "reason": "ok"},
+                    {
+                        "job_id": "hallucinated:job:999",
+                        "score": 10,
+                        "reason": "not real",
+                    },
+                ]
+            )
+        ]
+    )
     llm.screen(jobs, PROFILE, batch_size=8, provider=stub, model="m")
     assert jobs[0].score == 8.0
     assert jobs[1].score is None
@@ -159,20 +203,29 @@ def test_unknown_job_ids_in_the_reply_are_ignored():
 
 def test_scores_are_clamped_to_the_0_10_range():
     jobs = make_jobs(2)
-    stub = StubProvider([json.dumps([
-        {"job_id": jobs[0].job_id, "score": 47, "reason": "over"},
-        {"job_id": jobs[1].job_id, "score": -3, "reason": "under"},
-    ])])
+    stub = StubProvider(
+        [
+            json.dumps(
+                [
+                    {"job_id": jobs[0].job_id, "score": 47, "reason": "over"},
+                    {"job_id": jobs[1].job_id, "score": -3, "reason": "under"},
+                ]
+            )
+        ]
+    )
     llm.screen(jobs, PROFILE, batch_size=8, provider=stub, model="m")
     assert [j.score for j in jobs] == [10.0, 0.0]
 
 
 def test_fenced_reply_with_preamble_still_scores(capsys):
     jobs = make_jobs(1)
-    stub = StubProvider([
-        "Sure! Here are the scores:\n```json\n"
-        f'[{{"job_id": "{jobs[0].job_id}", "score": 8.5, "reason": "strong Go match"}}]'
-        "\n```"])
+    stub = StubProvider(
+        [
+            "Sure! Here are the scores:\n```json\n"
+            f'[{{"job_id": "{jobs[0].job_id}", "score": 8.5, "reason": "strong Go match"}}]'
+            "\n```"
+        ]
+    )
     llm.screen(jobs, PROFILE, batch_size=8, provider=stub, model="m")
     assert jobs[0].score == 8.5
     assert jobs[0].reason == "strong Go match"
@@ -198,13 +251,24 @@ def test_a_provider_error_does_not_abort_screening():
 
 def test_draft_kit_has_every_key_the_digest_renders():
     jobs = make_jobs(1)
-    stub = StubProvider(["```json\n" + json.dumps({
-        "fit_summary": "Two sentences about fit.",
-        "tailored_bullets": ["Cut p99 by 70%", "Migrated 40 services"],
-        "gaps": ["No Rust in production"],
-        "cover_note": "A plain 130-word note.",
-        "questions_to_ask": ["How is on-call split?", "What is the deploy cadence?"],
-    }) + "\n```"])
+    stub = StubProvider(
+        [
+            "```json\n"
+            + json.dumps(
+                {
+                    "fit_summary": "Two sentences about fit.",
+                    "tailored_bullets": ["Cut p99 by 70%", "Migrated 40 services"],
+                    "gaps": ["No Rust in production"],
+                    "cover_note": "A plain 130-word note.",
+                    "questions_to_ask": [
+                        "How is on-call split?",
+                        "What is the deploy cadence?",
+                    ],
+                }
+            )
+            + "\n```"
+        ]
+    )
 
     llm.draft(jobs, PROFILE, provider=stub, model="m")
 
@@ -255,9 +319,15 @@ def test_keyword_screen_stays_in_range_with_an_empty_profile():
     assert 0 <= jobs[0].score <= 10
 
 
-ENV_KEYS = ["LLM_PROVIDER", "SCREEN_PROVIDER", "DRAFT_PROVIDER",
-            "SCREEN_MODEL", "DRAFT_MODEL", "GEMINI_API_KEY",
-            "OPENAI_API_KEY"]
+ENV_KEYS = [
+    "LLM_PROVIDER",
+    "SCREEN_PROVIDER",
+    "DRAFT_PROVIDER",
+    "SCREEN_MODEL",
+    "DRAFT_MODEL",
+    "GEMINI_API_KEY",
+    "OPENAI_API_KEY",
+]
 
 
 @pytest.fixture

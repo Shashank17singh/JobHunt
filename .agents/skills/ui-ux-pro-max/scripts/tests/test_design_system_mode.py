@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Regression tests for color-mode coherence in design_system.py (issue #428).
 
@@ -23,20 +22,28 @@ from pathlib import Path
 SCRIPTS_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SCRIPTS_DIR))
 
-from design_system import (  # noqa: E402
-    _filter_anti_patterns_for_mode,
+from design_system import (
+    DesignSystemGenerator,
     _contrast_ratio,
+    _filter_anti_patterns_for_mode,
     _palette_is_dark,
     _query_wants_dark,
     _relative_luminance,
     _resolve_color_mode,
     _select_palette_for_mode,
     _style_is_dark_primary,
-    DesignSystemGenerator,
-)  # noqa: I001 - private helpers first, public class last
+)
 
-LIGHT_PALETTE = {"Product Type": "SaaS", "Background": "#F8FAFC", "Foreground": "#020617"}
-DARK_PALETTE = {"Product Type": "Fintech/Crypto", "Background": "#0F172A", "Foreground": "#F8FAFC"}
+LIGHT_PALETTE = {
+    "Product Type": "SaaS",
+    "Background": "#F8FAFC",
+    "Foreground": "#020617",
+}
+DARK_PALETTE = {
+    "Product Type": "Fintech/Crypto",
+    "Background": "#0F172A",
+    "Foreground": "#F8FAFC",
+}
 
 # Verbatim from styles.csv row "Modern Dark (Cinema Mobile)".
 DARK_PRIMARY_STYLE = {
@@ -108,19 +115,20 @@ class TestPaletteSelection(unittest.TestCase):
         self.assertEqual(_select_palette_for_mode([], "dark"), {})
 
     def test_category_identity_wins_over_unrelated_dark_palette(self):
-        chosen = _select_palette_for_mode(
-            [LIGHT_PALETTE, DARK_PALETTE], "dark", "SaaS")
+        chosen = _select_palette_for_mode([LIGHT_PALETTE, DARK_PALETTE], "dark", "SaaS")
         self.assertEqual("SaaS", chosen["Product Type"])
         self.assertEqual("derived-dark", chosen["_mode_derivation"])
         self.assertTrue(_palette_is_dark(chosen))
         self.assertGreaterEqual(
-            _contrast_ratio(chosen["Ring"], chosen["Background"]), 3.0)
+            _contrast_ratio(chosen["Ring"], chosen["Background"]), 3.0
+        )
 
 
 class TestAntiPatternGating(unittest.TestCase):
     def test_dark_clause_dropped_others_kept(self):
         result = _filter_anti_patterns_for_mode(
-            "Excessive animation + Dark mode by default", "dark")
+            "Excessive animation + Dark mode by default", "dark"
+        )
         self.assertEqual(result, "Excessive animation")
 
     def test_light_mode_is_a_no_op(self):
@@ -145,7 +153,7 @@ class TestEndToEndCoherence(unittest.TestCase):
         background = ds["colors"]["background"]
         self.assertTrue(
             _palette_is_dark({"Background": background}),
-            "dark-mode query returned a light background: {}".format(background),
+            f"dark-mode query returned a light background: {background}",
         )
 
     def test_generator_exports_every_semantic_foreground_pair(self):

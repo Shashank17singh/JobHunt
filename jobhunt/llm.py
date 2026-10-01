@@ -7,10 +7,17 @@ from typing import Any
 from .fetch import Job
 from .providers import LLMError, Provider, resolve
 
-_FENCE_OPEN = re.compile(r"^\s*```(?:json|JSON)?\s*", re.M)
-_FENCE_CLOSE = re.compile(r"\s*```\s*$", re.M)
+_FENCE_OPEN = re.compile(r"^\s*```(?:json|JSON)?\s*", re.MULTILINE)
+_FENCE_CLOSE = re.compile(r"\s*```\s*$", re.MULTILINE)
 
-DRAFT_KEYS = ("fit_summary", "required_skills", "tailored_bullets", "gaps", "cover_note", "questions_to_ask")
+DRAFT_KEYS = (
+    "fit_summary",
+    "required_skills",
+    "tailored_bullets",
+    "gaps",
+    "cover_note",
+    "questions_to_ask",
+)
 
 SCREEN_MAX_TOKENS = 4000
 DRAFT_MAX_TOKENS = 8000
@@ -30,7 +37,7 @@ def parse_json(raw: str) -> Any:
     for opener, closer in (("[", "]"), ("{", "}")):
         i, k = cleaned.find(opener), cleaned.rfind(closer)
         if i != -1 and k > i:
-            candidates.append((i, cleaned[i:k + 1]))
+            candidates.append((i, cleaned[i : k + 1]))
     for _, blob in sorted(candidates):
         try:
             return json.loads(blob)
@@ -52,8 +59,6 @@ def _as_list(payload: Any) -> list[dict]:
     raise ValueError(f"expected a JSON array of results, got {type(payload).__name__}")
 
 
-
-
 PROFILE_PROMPT = """Extract a structured job-search profile from this resume.
 
 Return ONLY a JSON object, no prose, no markdown fences:
@@ -70,24 +75,25 @@ Return ONLY a JSON object, no prose, no markdown fences:
 }"""
 
 
-def build_profile(resume_text: str | None = None,
-                  provider: Provider | None = None,
-                  model: str = "") -> dict:
+def build_profile(
+    resume_text: str | None = None, provider: Provider | None = None, model: str = ""
+) -> dict:
     """Resume text -> profile.json. Uses the draft-stage model."""
     if not provider or not model:
         provider, model = resolve("draft")
 
     raw = provider.complete(
-        model, "", f"{PROFILE_PROMPT}\n\n--- RESUME ---\n"
-        f"{resume_text or ''}",
-        PROFILE_MAX_TOKENS, json_mode=True)
+        model,
+        "",
+        f"{PROFILE_PROMPT}\n\n--- RESUME ---\n{resume_text or ''}",
+        PROFILE_MAX_TOKENS,
+        json_mode=True,
+    )
 
     profile = parse_json(raw)
     if not isinstance(profile, dict):
         raise ValueError("profile extraction did not return a JSON object")
     return profile
-
-
 
 
 SCREEN_SYSTEM = """You screen job postings for one candidate. You are strict.
@@ -113,8 +119,14 @@ Echo `job_id` back exactly as given. `reason` is one sentence, max 20 words,
 concrete about the deciding factor."""
 
 
-def screen(jobs: list[Job], profile: dict, batch_size: int = 8, jd_chars: int = 1400,
-           provider: Provider | None = None, model: str | None = None) -> list[Job]:
+def screen(
+    jobs: list[Job],
+    profile: dict,
+    batch_size: int = 8,
+    jd_chars: int = 1400,
+    provider: Provider | None = None,
+    model: str | None = None,
+) -> list[Job]:
     """Scores a batch of jobs against the candidate's profile using an LLM."""
     if provider is None or model is None:
         provider, model = resolve("screen")
@@ -122,22 +134,27 @@ def screen(jobs: list[Job], profile: dict, batch_size: int = 8, jd_chars: int = 
     profile_blob = json.dumps(profile, ensure_ascii=False)
 
     for start in range(0, len(jobs), batch_size):
-        batch = jobs[start:start + batch_size]
-        payload = [{
-            "job_id": j.job_id,
-            "company": j.company,
-            "title": j.title,
-            "location": j.location,
-            "description": j.description[:jd_chars],
-        } for j in batch]
+        batch = jobs[start : start + batch_size]
+        payload = [
+            {
+                "job_id": j.job_id,
+                "company": j.company,
+                "title": j.title,
+                "location": j.location,
+                "description": j.description[:jd_chars],
+            }
+            for j in batch
+        ]
 
         n = start // batch_size + 1
         try:
             raw = provider.complete(
-                model, SCREEN_SYSTEM,
+                model,
+                SCREEN_SYSTEM,
                 f"CANDIDATE PROFILE:\n{profile_blob}\n\n"
                 f"JOBS:\n{json.dumps(payload, ensure_ascii=False)}",
-                SCREEN_MAX_TOKENS, json_mode=True,
+                SCREEN_MAX_TOKENS,
+                json_mode=True,
             )
             results = {}
             for r in _as_list(parse_json(raw)):
@@ -163,8 +180,6 @@ def screen(jobs: list[Job], profile: dict, batch_size: int = 8, jd_chars: int = 
     return jobs
 
 
-
-
 DRAFT_SYSTEM = """You prepare an application kit for one job.
 
 Hard rule: never invent experience. Every claim must trace to something in the
@@ -187,8 +202,13 @@ Return ONLY a JSON object, no prose:
 }"""
 
 
-def draft(jobs: list[Job], profile: dict, jd_chars: int = 6000,
-          provider: Provider | None = None, model: str | None = None) -> list[Job]:
+def draft(
+    jobs: list[Job],
+    profile: dict,
+    jd_chars: int = 6000,
+    provider: Provider | None = None,
+    model: str | None = None,
+) -> list[Job]:
     """Stage 2: full kit for the shortlist. One call per job, best model."""
     if provider is None or model is None:
         provider, model = resolve("draft")
@@ -197,11 +217,13 @@ def draft(jobs: list[Job], profile: dict, jd_chars: int = 6000,
     for j in jobs:
         try:
             raw = provider.complete(
-                model, DRAFT_SYSTEM,
+                model,
+                DRAFT_SYSTEM,
                 f"CANDIDATE PROFILE:\n{profile_blob}\n\n"
                 f"JOB: {j.title} at {j.company} ({j.location or 'location not stated'})\n"
                 f"URL: {j.url}\n\n{j.description[:jd_chars]}",
-                DRAFT_MAX_TOKENS, json_mode=True,
+                DRAFT_MAX_TOKENS,
+                json_mode=True,
             )
             kit = parse_json(raw)
             if not isinstance(kit, dict):
@@ -209,19 +231,24 @@ def draft(jobs: list[Job], profile: dict, jd_chars: int = 6000,
             j.draft = {
                 "fit_summary": str(kit.get("fit_summary") or ""),
                 "required_skills": [str(s) for s in (kit.get("required_skills") or [])],
-                "tailored_bullets": [str(b) for b in (kit.get("tailored_bullets") or [])],
+                "tailored_bullets": [
+                    str(b) for b in (kit.get("tailored_bullets") or [])
+                ],
                 "gaps": [str(g) for g in (kit.get("gaps") or [])],
                 "cover_note": str(kit.get("cover_note") or ""),
-                "questions_to_ask": [str(q) for q in (kit.get("questions_to_ask") or [])],
+                "questions_to_ask": [
+                    str(q) for q in (kit.get("questions_to_ask") or [])
+                ],
             }
             print(f"  drafted {j.title} @ {j.company}")
         except (LLMError, ValueError, KeyError, TypeError) as e:
             print(f"  ! draft failed for {j.job_id} ({type(e).__name__}: {e})")
-            j.draft = {k: ("" if k in ("fit_summary", "cover_note") else []) for k in DRAFT_KEYS}
+            j.draft = {
+                k: ("" if k in ("fit_summary", "cover_note") else [])
+                for k in DRAFT_KEYS
+            }
 
     return jobs
-
-
 
 
 def keyword_screen(jobs: list[Job], profile: dict, **_) -> list[Job]:
@@ -240,7 +267,11 @@ def keyword_screen(jobs: list[Job], profile: dict, **_) -> list[Job]:
         overlap = len(hits) / max(len(skills), 1)
         title_bonus = 2.5 if any(t in j.title.lower() for t in titles) else 0.0
         j.score = round(min(10.0, overlap * 12 + title_bonus), 1)
-        j.reason = ("[keyword stub] matched: " + ", ".join(hits[:5])) if hits else "[keyword stub] no match"
+        j.reason = (
+            ("[keyword stub] matched: " + ", ".join(hits[:5]))
+            if hits
+            else "[keyword stub] no match"
+        )
     return jobs
 
 
@@ -258,24 +289,31 @@ Hard Rules:
 - Never invent experience. Only use facts from the original resume and the tailored kit.
 - Ensure the LaTeX syntax is strictly preserved so it compiles without errors."""
 
-def draft_latex(job: Job, reference_tex: str,
-                provider: Provider | None = None, model: str | None = None) -> str | None:
+
+def draft_latex(
+    job: Job,
+    reference_tex: str,
+    provider: Provider | None = None,
+    model: str | None = None,
+) -> str | None:
     """Rewrites a LaTeX resume using the tailored draft kit for a specific job."""
     if provider is None or model is None:
         provider, model = resolve("draft")
-    
+
     kit_blob = json.dumps(job.draft, ensure_ascii=False)
-    
+
     try:
         raw = provider.complete(
-            model, LATEX_SYSTEM,
+            model,
+            LATEX_SYSTEM,
             f"TAILORED KIT:\n{kit_blob}\n\n"
             f"JOB: {job.title} at {job.company}\n\n"
             f"ORIGINAL LATEX RESUME:\n{reference_tex}",
-            DRAFT_MAX_TOKENS, json_mode=False
+            DRAFT_MAX_TOKENS,
+            json_mode=False,
         )
-        cleaned = re.sub(r"^\s*```(?:latex|tex)?\s*", "", raw, flags=re.M)
-        cleaned = re.sub(r"\s*```\s*$", "", cleaned, flags=re.M)
+        cleaned = re.sub(r"^\s*```(?:latex|tex)?\s*", "", raw, flags=re.MULTILINE)
+        cleaned = re.sub(r"\s*```\s*$", "", cleaned, flags=re.MULTILINE)
         return cleaned.strip()
     except Exception as e:
         print(f"  ! latex draft failed for {job.job_id} ({type(e).__name__}: {e})")

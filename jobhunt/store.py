@@ -1,4 +1,5 @@
 """seen.json doubles as the dedupe index AND the application tracker."""
+
 from __future__ import annotations
 
 import csv
@@ -27,18 +28,21 @@ class Store:
         """Records a list of jobs as seen and optionally marks them as emailed."""
         now = datetime.now(timezone.utc).isoformat(timespec="seconds")
         for j in jobs:
-            self.data.setdefault(j.job_id, {
-                "first_seen": now,
-                "company": j.company,
-                "title": j.title,
-                "location": j.location,
-                "url": j.url,
-                "score": j.score,
-                "reason": j.reason,
-                "emailed": emailed,
-                "applied": False,
-                "applied_on": None,
-            })
+            self.data.setdefault(
+                j.job_id,
+                {
+                    "first_seen": now,
+                    "company": j.company,
+                    "title": j.title,
+                    "location": j.location,
+                    "url": j.url,
+                    "score": j.score,
+                    "reason": j.reason,
+                    "emailed": emailed,
+                    "applied": False,
+                    "applied_on": None,
+                },
+            )
         self.save()
 
     def mark_applied(self, job_id: str) -> bool:
@@ -46,7 +50,9 @@ class Store:
         if job_id not in self.data:
             return False
         self.data[job_id]["applied"] = True
-        self.data[job_id]["applied_on"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        self.data[job_id]["applied_on"] = datetime.now(timezone.utc).isoformat(
+            timespec="seconds"
+        )
         self.save()
         return True
 
@@ -62,13 +68,25 @@ class Store:
         """Exports the tracked data to a CSV file."""
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        cols = ["first_seen", "company", "title", "location", "score",
-                "reason", "applied", "applied_on", "url"]
+        cols = [
+            "first_seen",
+            "company",
+            "title",
+            "location",
+            "score",
+            "reason",
+            "applied",
+            "applied_on",
+            "url",
+        ]
         with path.open("w", newline="", encoding="utf-8") as fh:
             w = csv.DictWriter(fh, fieldnames=["job_id"] + cols, extrasaction="ignore")
             w.writeheader()
-            for jid, row in sorted(self.data.items(),
-                                   key=lambda kv: kv[1].get("first_seen", ""), reverse=True):
+            for jid, row in sorted(
+                self.data.items(),
+                key=lambda kv: kv[1].get("first_seen", ""),
+                reverse=True,
+            ):
                 w.writerow({"job_id": jid, **row})
         return path
 

@@ -48,12 +48,13 @@ def _load_profile(cfg: dict, allow_sample: bool) -> dict | None:
     sample = ROOT / "profile.example.json"
     if allow_sample and sample.exists():
         print(f"  ! {path} missing — using {sample.name} for this dry run.")
-        print("    Build the real one: python -m jobhunt profile --resume JobHunt_Resume.tex")
+        print(
+            "    Build the real one: python -m jobhunt profile --resume JobHunt_Resume.tex"
+        )
         return json.loads(sample.read_text(encoding="utf-8"))
 
     print(f"missing {path} — run `python -m jobhunt profile --resume <file>` first")
     return None
-
 
 
 def cmd_profile(args) -> int:
@@ -68,18 +69,19 @@ def cmd_profile(args) -> int:
         print(f"Loading {src.name}...")
         profile = llm.build_profile(
             resume_text=src.read_text(encoding="utf-8", errors="replace"),
-            provider=provider, model=model,
+            provider=provider,
+            model=model,
         )
     except (LLMError, ValueError) as e:
         print(f"profile extraction failed: {e}")
         return 1
 
-    Path(args.out).write_text(json.dumps(profile, indent=2, ensure_ascii=False),
-                              encoding="utf-8")
+    Path(args.out).write_text(
+        json.dumps(profile, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
     print(f"wrote {args.out}\n")
     print(json.dumps(profile, indent=2, ensure_ascii=False)[:900])
     return 0
-
 
 
 def cmd_run(args) -> int:
@@ -95,7 +97,9 @@ def cmd_run(args) -> int:
     if args.mock:
         jobs = fetch_all_mock()
     else:
-        companies = _cfg(cfg.get("companies_file", "companies.yaml")).get("companies") or []
+        companies = (
+            _cfg(cfg.get("companies_file", "companies.yaml")).get("companies") or []
+        )
         if not companies:
             print("companies.yaml has no entries")
             return 1
@@ -112,7 +116,7 @@ def cmd_run(args) -> int:
     print(f"  new since last run: {len(jobs)}")
     candidates = len(jobs)
     if args.limit:
-        jobs = jobs[:args.limit]
+        jobs = jobs[: args.limit]
         print(f"  --limit {args.limit} applied")
 
     if not jobs:
@@ -132,21 +136,30 @@ def cmd_run(args) -> int:
             print(f"\n{e}\nNo key? Run with --scorer keyword for an offline dry run.")
             return 1
         print(f"\n[3/5] screening {len(jobs)} jobs via {provider.name}/{model}")
-        llm.screen(jobs, profile,
-                   batch_size=int(cfg.get("screen_batch_size", 8)),
-                   jd_chars=int(cfg.get("screen_jd_chars", 1400)),
-                   provider=provider, model=model)
+        llm.screen(
+            jobs,
+            profile,
+            batch_size=int(cfg.get("screen_batch_size", 8)),
+            jd_chars=int(cfg.get("screen_jd_chars", 1400)),
+            provider=provider,
+            model=model,
+        )
 
     if scorer == "llm" and not any(j.score is not None for j in jobs):
-        print("\n! screening scored nothing: every batch failed.\n"
-              "  Not recording these jobs, so the next run retries them.\n"
-              "  Check the warnings above (bad key, rate limit, wrong model id).")
+        print(
+            "\n! screening scored nothing: every batch failed.\n"
+            "  Not recording these jobs, so the next run retries them.\n"
+            "  Check the warnings above (bad key, rate limit, wrong model id)."
+        )
         return 1
 
     threshold = float(cfg.get("score_threshold", 7.0))
     top_n = int(cfg.get("max_per_digest", 5))
-    shortlist = sorted([j for j in jobs if (j.score or 0) >= threshold],
-                       key=lambda j: j.score or 0, reverse=True)[:top_n]
+    shortlist = sorted(
+        [j for j in jobs if (j.score or 0) >= threshold],
+        key=lambda j: j.score or 0,
+        reverse=True,
+    )[:top_n]
     print(f"  {len(shortlist)} scored >= {threshold}")
 
     print(f"\n[4/5] drafting kits for {len(shortlist)}")
@@ -159,36 +172,54 @@ def cmd_run(args) -> int:
         try:
             provider, model = resolve("draft")
             print(f"  via {provider.name}/{model}")
-            llm.draft(shortlist, profile,
-                      jd_chars=int(cfg.get("draft_jd_chars", 6000)),
-                      provider=provider, model=model)
-            
+            llm.draft(
+                shortlist,
+                profile,
+                jd_chars=int(cfg.get("draft_jd_chars", 6000)),
+                provider=provider,
+                model=model,
+            )
+
             ref_path = Path(cfg.get("resume_file", "JobHunt_Resume.tex"))
             if ref_path.exists():
                 reference_tex = ref_path.read_text(encoding="utf-8")
                 out_dir = Path("out")
                 out_dir.mkdir(exist_ok=True)
                 import subprocess
+
                 for j in shortlist:
                     print(f"  drafting latex for {j.title} @ {j.company}...")
-                    tex = llm.draft_latex(j, reference_tex, provider=provider, model=model)
+                    tex = llm.draft_latex(
+                        j, reference_tex, provider=provider, model=model
+                    )
                     if tex:
-                        safe_name = f"{j.company}_{j.job_id}".replace(" ", "_").replace("/", "_")
+                        safe_name = f"{j.company}_{j.job_id}".replace(" ", "_").replace(
+                            "/", "_"
+                        )
                         tex_file = out_dir / f"{safe_name}.tex"
                         tex_file.write_text(tex, encoding="utf-8")
                         res = subprocess.run(
-                            ["pdflatex", "-interaction=nonstopmode", f"-output-directory={out_dir}", str(tex_file)],
-                            capture_output=True
+                            [
+                                "pdflatex",
+                                "-interaction=nonstopmode",
+                                f"-output-directory={out_dir}",
+                                str(tex_file),
+                            ],
+                            capture_output=True,
                         )
                         pdf_file = out_dir / f"{safe_name}.pdf"
                         if pdf_file.exists():
                             attachments.append(pdf_file)
                         else:
-                            print(f"  ! failed to compile {tex_file.name}, attaching .tex instead")
+                            print(
+                                f"  ! failed to compile {tex_file.name}, attaching .tex instead"
+                            )
                             attachments.append(tex_file)
             else:
-                print(f"  ! reference latex {ref_path} not found, skipping latex drafts")
-                
+                print(
+                    f"  ! reference latex {ref_path} not found, skipping latex drafts"
+                )
+
         except LLMError as e:
             print(f"  ! drafting unavailable: {e}")
 
@@ -210,8 +241,10 @@ def cmd_run(args) -> int:
     store.record(jobs, emailed=sent)
     csv_path = store.export_csv(cfg.get("tracker_csv", "out/tracker.csv"))
 
-    print(f"\nfunnel: {scanned} scanned -> {passed_filters} passed filters "
-          f"-> {candidates} new -> {len(shortlist)} in digest")
+    print(
+        f"\nfunnel: {scanned} scanned -> {passed_filters} passed filters "
+        f"-> {candidates} new -> {len(shortlist)} in digest"
+    )
     print(f"subject: {subject}")
     print(f"tracker: {store.stats()}  ({csv_path})")
     return 0
@@ -239,19 +272,26 @@ def main(argv=None) -> int:
     _load_env()
     p = argparse.ArgumentParser(
         prog="jobhunt",
-        description="Personal job-search agent. Finds and drafts; never submits.")
+        description="Personal job-search agent. Finds and drafts; never submits.",
+    )
     p.add_argument("--config", default="config.yaml")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sp = sub.add_parser("profile", help="turn a resume into profile.json")
-    sp.add_argument("--resume", required=True, help="path to a .tex, .txt or .md resume")
+    sp.add_argument(
+        "--resume", required=True, help="path to a .tex, .txt or .md resume"
+    )
     sp.add_argument("--out", default="profile.json")
     sp.set_defaults(func=cmd_profile)
 
     sr = sub.add_parser("run", help="run the daily pipeline")
     sr.add_argument("--mock", action="store_true", help="bundled fixtures, no network")
-    sr.add_argument("--scorer", choices=["llm", "keyword"], default="llm",
-                    help="keyword = offline stub, needs no API key")
+    sr.add_argument(
+        "--scorer",
+        choices=["llm", "keyword"],
+        default="llm",
+        help="keyword = offline stub, needs no API key",
+    )
     sr.add_argument("--no-draft", action="store_true", help="skip the expensive stage")
     sr.add_argument("--send", action="store_true", help="actually email the digest")
     sr.add_argument("--limit", type=int, help="cap jobs sent to the LLM (cost guard)")
