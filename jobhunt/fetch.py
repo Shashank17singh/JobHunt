@@ -17,6 +17,7 @@ _NL = re.compile(r"\n{3,}")
 
 
 def strip_html(raw: str | None) -> str:
+    """Strips HTML tags from a string, converting some structural tags to newlines."""
     if not raw:
         return ""
     text = html.unescape(raw)
@@ -49,6 +50,7 @@ class Job:
 
 
 def parse_greenhouse(slug: str, company: str, body: Any) -> list[Job]:
+    """Parses jobs from a Greenhouse ATS API response."""
     out = []
     for j in (body or {}).get("jobs", []):
         loc = (j.get("location") or {}).get("name") or ""
@@ -66,6 +68,7 @@ def parse_greenhouse(slug: str, company: str, body: Any) -> list[Job]:
 
 
 def parse_lever(slug: str, company: str, body: Any) -> list[Job]:
+    """Parses jobs from a Lever ATS API response."""
     out = []
     for j in (body or []):
         cats = j.get("categories") or {}
@@ -94,6 +97,7 @@ def parse_lever(slug: str, company: str, body: Any) -> list[Job]:
 
 
 def parse_ashby(slug: str, company: str, body: Any) -> list[Job]:
+    """Parses jobs from an Ashby ATS API response."""
     out = []
     for j in (body or {}).get("jobs", []):
         if j.get("isListed") is False:
@@ -126,6 +130,7 @@ ENDPOINTS = {
 
 def fetch_board(ats: str, slug: str, company: str | None = None,
                 session: requests.Session | None = None) -> list[Job]:
+    """Fetches and parses job listings from a specific ATS board."""
     if ats not in ENDPOINTS:
         raise ValueError(f"unknown ATS: {ats}")
     url_tpl, parser = ENDPOINTS[ats]
@@ -142,6 +147,7 @@ def fetch_board(ats: str, slug: str, company: str | None = None,
 
 
 def fetch_all(companies: Iterable[dict], sleep: float = 0.25) -> list[Job]:
+    """Iterates through a list of company configs and fetches jobs for all of them."""
     jobs: list[Job] = []
     session = requests.Session()
     for c in companies:

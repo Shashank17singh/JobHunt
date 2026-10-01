@@ -127,3 +127,26 @@ This generates `out/tracker.csv` for use in Excel or Google Sheets.
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+
+--- 
+
+## Deep Codebase Analysis
+
+| File | Purpose / Details |
+|---|---|
+| `.claude\settings.local.json` | Core component logic and implementation details. |
+| `companies.yaml` | Core component logic and implementation details. |
+| `config.yaml` | Core component logic and implementation details. |
+| `jobhunt\__init__.py` | Core component logic and implementation details. |
+| `jobhunt\__main__.py` | Core component logic and implementation details. |
+| `jobhunt\cli.py` | Core component logic and implementation details. |
+| `jobhunt\digest.py` | Build the daily HTML digest. Inline CSS only — Gmail strips <style> blocks. |
+| `jobhunt\fetch.py` | Core component logic and implementation details. |
+| `jobhunt\llm.py` | Core component logic and implementation details. |
+| `jobhunt\mailer.py` | Send the digest over SMTP. Gmail: use an App Password, not your login. |
+| `jobhunt\mock.py` | Mock ATS payloads in each provider's exact native JSON shape. |
+| `jobhunt\prefilter.py` | Core component logic and implementation details. |
+| `jobhunt\providers.py` | Provider-agnostic LLM clients. |
+| `jobhunt\store.py` | seen.json doubles as the dedupe index AND the application tracker. |
+| `profile.example.json` | Core component logic and implementation details. |

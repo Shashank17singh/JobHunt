@@ -10,10 +10,12 @@ REMOTE_HINTS = ("remote", "anywhere", "work from home", "wfh", "distributed")
 
 
 def _any_match(patterns: list[str], text: str) -> bool:
+    """Checks if any regex pattern matches the given text."""
     return any(re.search(p, text, re.I) for p in patterns)
 
 
 def _parse_date(value: str | None) -> datetime | None:
+    """Parses a date string into a UTC datetime object."""
     if not value:
         return None
     v = value.replace("Z", "+00:00")
@@ -27,6 +29,7 @@ def _parse_date(value: str | None) -> datetime | None:
 
 
 def prefilter(jobs: list[Job], cfg: dict) -> list[Job]:
+    """Filters jobs based on inclusion/exclusion rules, locations, and age."""
     inc = cfg.get("include_titles") or [r"."]
     exc = cfg.get("exclude_titles") or []
     locs = [l.lower() for l in (cfg.get("locations") or [])]

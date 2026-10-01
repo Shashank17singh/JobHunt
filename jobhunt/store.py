@@ -20,9 +20,11 @@ class Store:
                 print(f"  ! {self.path} corrupt, starting fresh")
 
     def unseen(self, jobs: list[Job]) -> list[Job]:
+        """Returns jobs that have not been seen before in the data store."""
         return [j for j in jobs if j.job_id not in self.data]
 
     def record(self, jobs: list[Job], emailed: bool) -> None:
+        """Records a list of jobs as seen and optionally marks them as emailed."""
         now = datetime.now(timezone.utc).isoformat(timespec="seconds")
         for j in jobs:
             self.data.setdefault(j.job_id, {
@@ -40,6 +42,7 @@ class Store:
         self.save()
 
     def mark_applied(self, job_id: str) -> bool:
+        """Marks a specific job as applied."""
         if job_id not in self.data:
             return False
         self.data[job_id]["applied"] = True
@@ -48,6 +51,7 @@ class Store:
         return True
 
     def stats(self) -> dict:
+        """Returns tracking statistics for tracked, emailed, and applied jobs."""
         return {
             "tracked": len(self.data),
             "emailed": sum(1 for v in self.data.values() if v.get("emailed")),
@@ -55,6 +59,7 @@ class Store:
         }
 
     def export_csv(self, path: str | Path = "out/tracker.csv") -> Path:
+        """Exports the tracked data to a CSV file."""
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         cols = ["first_seen", "company", "title", "location", "score",
@@ -68,4 +73,5 @@ class Store:
         return path
 
     def save(self) -> None:
+        """Saves the current data store to disk."""
         self.path.write_text(json.dumps(self.data, indent=2, ensure_ascii=False))

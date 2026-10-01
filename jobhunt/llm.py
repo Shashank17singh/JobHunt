@@ -18,6 +18,7 @@ PROFILE_MAX_TOKENS = 4000
 
 
 def parse_json(raw: str) -> Any:
+    """Attempts to parse JSON from an LLM output, stripping markdown fences if necessary."""
     if raw is None:
         raise ValueError("empty model reply")
     cleaned = _FENCE_CLOSE.sub("", _FENCE_OPEN.sub("", raw)).strip()
@@ -115,6 +116,7 @@ concrete about the deciding factor."""
 
 def screen(jobs: list[Job], profile: dict, batch_size: int = 8, jd_chars: int = 1400,
            provider: Provider | None = None, model: str | None = None) -> list[Job]:
+    """Scores a batch of jobs against the candidate's profile using an LLM."""
     if provider is None or model is None:
         provider, model = resolve("screen")
     batch_size = max(1, int(batch_size))
@@ -260,6 +262,7 @@ Hard Rules:
 
 def draft_latex(job: Job, reference_tex: str,
                 provider: Provider | None = None, model: str | None = None) -> str | None:
+    """Rewrites a LaTeX resume using the tailored draft kit for a specific job."""
     if provider is None or model is None:
         provider, model = resolve("draft")
     
