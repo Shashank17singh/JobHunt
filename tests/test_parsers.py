@@ -2,6 +2,7 @@
 
 Validates parsing logic for Lever's epoch-milliseconds timestamps and regex matching for titles like `sde`.
 """
+
 from __future__ import annotations
 
 import re
@@ -19,8 +20,9 @@ from jobhunt.fetch import parse_ashby, parse_greenhouse, parse_lever, strip_html
 from jobhunt.mock import fetch_all_mock
 from jobhunt.prefilter import prefilter
 
-CONFIG = yaml.safe_load((Path(__file__).resolve().parent.parent / "config.yaml")
-                        .read_text(encoding="utf-8"))
+CONFIG = yaml.safe_load(
+    (Path(__file__).resolve().parent.parent / "config.yaml").read_text(encoding="utf-8")
+)
 FILTERS = CONFIG["filters"]
 
 
@@ -56,10 +58,10 @@ def test_lever_concatenates_description_lists_and_additional():
     """Ensures requirements in lists[] are concatenated with descriptionPlain."""
     jobs = parse_lever("quantstack", "QuantStack", mock.LEVER["quantstack"])
     j = next(j for j in jobs if j.title == "Backend Engineer (Go)")
-    assert "market data pipeline" in j.description      # descriptionPlain
-    assert "Requirements" in j.description              # lists[].text
+    assert "market data pipeline" in j.description  # descriptionPlain
+    assert "Requirements" in j.description  # lists[].text
     assert "2-5 years backend experience" in j.description  # lists[].content
-    assert "No take-home" in j.description              # additionalPlain
+    assert "No take-home" in j.description  # additionalPlain
 
 
 def test_lever_createdAt_is_epoch_milliseconds():
@@ -73,7 +75,7 @@ def test_lever_createdAt_is_epoch_milliseconds():
 def test_ashby_skips_unlisted_drafts():
     jobs = parse_ashby("helioscale", "Helioscale", mock.ASHBY["helioscale"])
     assert all("unlisted" not in j.url for j in jobs)
-    assert len(jobs) == 2   # 3 postings, one isListed: false
+    assert len(jobs) == 2  # 3 postings, one isListed: false
 
 
 def test_ashby_reads_compensation_and_html_fallback():
@@ -81,7 +83,7 @@ def test_ashby_reads_compensation_and_html_fallback():
     networking = next(j for j in jobs if j.title == "Software Engineer, Networking")
     assert networking.salary == "₹32L – ₹48L"
     ds = next(j for j in jobs if j.title == "Data Scientist, Growth")
-    assert "Causal inference" in ds.description   # descriptionHtml fallback
+    assert "Causal inference" in ds.description  # descriptionHtml fallback
 
 
 def test_job_ids_are_globally_unique_and_namespaced():
@@ -98,37 +100,46 @@ def test_parsers_take_decoded_json_not_a_response():
     assert parse_ashby("x", "X", {}) == []
 
 
-@pytest.mark.parametrize("title", [
-    "Software Engineer II, Distributed Systems",
-    "Software Development Engineer, Core Infra",
-    "Backend Engineer (Go)",
-    "Site Reliability Engineer",
-    "SDE II",
-])
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Software Engineer II, Distributed Systems",
+        "Software Development Engineer, Core Infra",
+        "Backend Engineer (Go)",
+        "Site Reliability Engineer",
+        "SDE II",
+    ],
+)
 def test_include_titles_match_real_titles(title):
     inc = FILTERS["include_titles"]
-    assert any(re.search(p, title, re.I) for p in inc), title
+    assert any(re.search(p, title, re.IGNORECASE) for p in inc), title
 
 
 def test_bare_sde_regex_does_not_match_the_spelled_out_title():
     """Ensures the regex properly handles spelled-out variants alongside acronyms like SDE."""
-    assert not re.search(r"\bsde\b", "Software Development Engineer", re.I)
-    assert re.search(r"\bsde\b", "SDE II", re.I)
+    assert not re.search(r"\bsde\b", "Software Development Engineer", re.IGNORECASE)
+    assert re.search(r"\bsde\b", "SDE II", re.IGNORECASE)
     inc = FILTERS["include_titles"]
-    assert any(re.search(p, "Software Development Engineer, Core Infra", re.I) for p in inc)
+    assert any(
+        re.search(p, "Software Development Engineer, Core Infra", re.IGNORECASE)
+        for p in inc
+    )
 
 
-@pytest.mark.parametrize("title", [
-    "Staff Software Engineer, Storage",       # Rejected: too senior
-    "Engineering Manager, Platform",          # Rejected: management track
-    "Enterprise Account Executive",           # Rejected: wrong function
-    "Frontend Engineer, Design Systems",      # Rejected: wrong discipline
-    # Note: "Data Scientist, Growth" is kept since the config targets ML/DS roles.
-])
+@pytest.mark.parametrize(
+    "title",
+    [
+        "Staff Software Engineer, Storage",  # Rejected: too senior
+        "Engineering Manager, Platform",  # Rejected: management track
+        "Enterprise Account Executive",  # Rejected: wrong function
+        "Frontend Engineer, Design Systems",  # Rejected: wrong discipline
+        # Note: "Data Scientist, Growth" is kept since the config targets ML/DS roles.
+    ],
+)
 def test_junk_titles_are_rejected(title):
     inc, exc = FILTERS["include_titles"], FILTERS["exclude_titles"]
-    included = any(re.search(p, title, re.I) for p in inc)
-    excluded = any(re.search(p, title, re.I) for p in exc)
+    included = any(re.search(p, title, re.IGNORECASE) for p in inc)
+    excluded = any(re.search(p, title, re.IGNORECASE) for p in exc)
     assert excluded or not included, f"{title!r} would have survived"
 
 
@@ -159,9 +170,16 @@ def test_wrong_city_dropped_but_remote_kept():
 def test_allow_remote_is_what_lets_an_out_of_region_remote_role_through():
     """Tests filtering with a remote role that specifies an out-of-region location."""
     from jobhunt.fetch import Job
-    remote = Job(job_id="lever:x:1", ats="lever", company="X",
-                 title="Backend Engineer", location="Remote - Global",
-                 url="https://example.com", description="Go")
+
+    remote = Job(
+        job_id="lever:x:1",
+        ats="lever",
+        company="X",
+        title="Backend Engineer",
+        location="Remote - Global",
+        url="https://example.com",
+        description="Go",
+    )
 
     kept_on = prefilter([remote], dict(FILTERS, allow_remote=True))
     kept_off = prefilter([remote], dict(FILTERS, allow_remote=False))

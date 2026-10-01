@@ -11,13 +11,12 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Optional
 
 
 class ShadcnInstaller:
     """Handle shadcn/ui component installation."""
 
-    def __init__(self, project_root: Optional[Path] = None, dry_run: bool = False):
+    def __init__(self, project_root: Path | None = None, dry_run: bool = False):
         """
         Initialize installer.
 
@@ -38,7 +37,7 @@ class ShadcnInstaller:
         """
         return self.components_json.exists()
 
-    def get_installed_components(self) -> List[str]:
+    def get_installed_components(self) -> list[str]:
         """
         Get list of already installed components.
 
@@ -79,7 +78,7 @@ class ShadcnInstaller:
         return "2.3.0"  # pinned fallback; update when newer stable release is needed
 
     def add_components(
-        self, components: List[str], overwrite: bool = False
+        self, components: list[str], overwrite: bool = False
     ) -> tuple[bool, str]:
         """
         Add shadcn/ui components.
@@ -184,7 +183,9 @@ class ShadcnInstaller:
             return True, success_msg
 
         except subprocess.CalledProcessError as e:
-            error_msg = f"Failed to add all components: {e.stderr or e.stdout or str(e)}"
+            error_msg = (
+                f"Failed to add all components: {e.stderr or e.stdout or str(e)}"
+            )
             return False, error_msg
         except FileNotFoundError:
             return False, "npx not found. Ensure Node.js is installed"
@@ -204,7 +205,9 @@ class ShadcnInstaller:
         if not installed:
             return True, "No components installed"
 
-        return True, f"Installed components:\n" + "\n".join(f"  - {c}" for c in sorted(installed))
+        return True, "Installed components:\n" + "\n".join(
+            f"  - {c}" for c in sorted(installed)
+        )
 
 
 def main():

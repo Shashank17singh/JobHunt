@@ -12,8 +12,8 @@ SCRIPTS_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = SCRIPTS_DIR.parent / "data"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
-from core import search  # noqa: E402
-from design_system import _style_is_dark_primary  # noqa: E402
+from core import search
+from design_system import _style_is_dark_primary
 
 
 def read_rows(name):
@@ -32,9 +32,7 @@ class TestStyleTaxonomy(unittest.TestCase):
             status: sum(row["Status"] == status for row in self.styles)
             for status in ("active", "supplemental", "deprecated")
         }
-        self.assertEqual(
-            {"active": 50, "supplemental": 29, "deprecated": 9}, counts
-        )
+        self.assertEqual({"active": 50, "supplemental": 29, "deprecated": 9}, counts)
 
     def test_every_style_name_and_alias_has_a_deterministic_destination(self):
         for row in self.styles:
@@ -43,8 +41,10 @@ class TestStyleTaxonomy(unittest.TestCase):
             for query in queries:
                 with self.subTest(style=row["Style ID"], query=query):
                     result = search(query, max_results=1)
-                    if (row["Status"] == "deprecated"
-                            and row["Replacement Domain"] == "landing"):
+                    if (
+                        row["Status"] == "deprecated"
+                        and row["Replacement Domain"] == "landing"
+                    ):
                         self.assertEqual(0, result["count"])
                         self.assertEqual(
                             {
@@ -88,9 +88,7 @@ class TestStyleTaxonomy(unittest.TestCase):
                 self.assertIn(row["Status"], {"supplemental", "deprecated"})
 
         self.assertEqual("style", self.by_id["bento-grids"]["Replacement Domain"])
-        self.assertEqual(
-            "bento-box-grid", self.by_id["bento-grids"]["Replacement ID"]
-        )
+        self.assertEqual("bento-box-grid", self.by_id["bento-grids"]["Replacement ID"])
 
         self.assertEqual(
             "neumorphism-mobile",
@@ -110,11 +108,15 @@ class TestStyleTaxonomy(unittest.TestCase):
         )
         self.assertEqual(
             "claymorphism-mobile",
-            search("mobile app with claymorphism", "style", 1)["results"][0]["Style ID"],
+            search("mobile app with claymorphism", "style", 1)["results"][0][
+                "Style ID"
+            ],
         )
         self.assertEqual(
             "spectrum-2",
-            search("design system for Spectrum 2", "style", 1)["results"][0]["Style ID"],
+            search("design system for Spectrum 2", "style", 1)["results"][0][
+                "Style ID"
+            ],
         )
 
     def test_claim_fields_use_controlled_non_guarantee_language(self):
@@ -124,7 +126,9 @@ class TestStyleTaxonomy(unittest.TestCase):
         for row in self.styles:
             with self.subTest(style=row["Style ID"]):
                 self.assertIn(row["Performance"].split("|", 1)[0], allowed_performance)
-                self.assertIn(row["Accessibility"].split("|", 1)[0], allowed_accessibility)
+                self.assertIn(
+                    row["Accessibility"].split("|", 1)[0], allowed_accessibility
+                )
                 self.assertIn(row["Light Mode ✓"], allowed_mode)
                 self.assertIn(row["Dark Mode ✓"], allowed_mode)
                 self.assertIn(row["Preferred Mode"], {"auto", "light", "dark"})
