@@ -1,4 +1,4 @@
-name: daily job digest
+name: tests
 
 on:
   schedule:
