@@ -1,12 +1,7 @@
-"""LLM layer with the provider stubbed out. No key, no network, no cost.
-
-Asserts the four things that actually break in production:
-  1. batching splits the way config says it does
-  2. JD truncation really is applied before the text goes over the wire
-  3. the JSON parser survives fences, preambles and object-or-array replies
-  4. scores land on the right job, and a bad batch does not kill the run
 """
-
+Unit tests for the LLM abstraction and evaluation logic.
+Uses a stub provider to test JSON parsing, retries, and batching without network calls.
+"""
 from __future__ import annotations
 
 import json

@@ -1,3 +1,8 @@
+"""
+Command-line interface and main entrypoint for the jobhunt tool.
+Coordinates fetching, filtering, screening, drafting, and mailing.
+Architecture note: Encapsulates the job search workflow in `JobPipeline` and exposes subcommands via `argparse`.
+"""
 from __future__ import annotations
 
 import argparse
@@ -84,170 +89,214 @@ def cmd_profile(args) -> int:
     return 0
 
 
+class JobPipeline:
+    """Encapsulates the job hunting pipeline steps: fetch, filter, screen, and draft."""
+    
+    def __init__(self, args: argparse.Namespace, cfg: dict, profile: dict, store: Store):
+        self.args = args
+        self.cfg = cfg
+        self.profile = profile
+        self.store = store
+        self.filters = cfg.get("filters", {}) or {}
+        
+        self.jobs = []
+        self.scanned = 0
+        self.candidates = 0
+        self.shortlist = []
+        self.attachments = []
+
+    def execute(self) -> int:
+        """Runs the entire pipeline sequentially."""
+        if not self.fetch_jobs():
+            return 1
+            
+        if not self.filter_jobs():
+            self.generate_empty_digest()
+            return 0
+            
+        if not self.screen_jobs():
+            return 1
+            
+        self.draft_responses()
+        self.finalize_digest()
+        return 0
+
+    def fetch_jobs(self) -> bool:
+        print("\n[1/5] fetching boards")
+        if self.args.mock:
+            self.jobs = fetch_all_mock()
+        else:
+            companies = _cfg(self.cfg.get("companies_file", "companies.yaml")).get("companies") or []
+            if not companies:
+                print("companies.yaml has no entries")
+                return False
+            self.jobs = fetch_all(companies)
+            
+        self.scanned = len(self.jobs)
+        if not self.scanned:
+            print("no postings fetched — check the slugs in companies.yaml")
+            return False
+        return True
+
+    def filter_jobs(self) -> bool:
+        print("\n[2/5] filtering")
+        self.jobs = prefilter(self.jobs, self.filters)
+        self.passed_filters = len(self.jobs)
+        self.jobs = self.store.unseen(self.jobs)
+        
+        print(f"  new since last run: {len(self.jobs)}")
+        self.candidates = len(self.jobs)
+        
+        if self.args.limit:
+            self.jobs = self.jobs[:self.args.limit]
+            print(f"  --limit {self.args.limit} applied")
+            
+        return bool(self.jobs)
+
+    def generate_empty_digest(self) -> None:
+        subject, doc = digest_mod.build([], self.scanned, 0, self.store.stats())
+        path = digest_mod.write(doc, self.cfg.get("digest_file", "out/digest.html"))
+        print(f"\nnothing new today. preview: {path}")
+
+    def screen_jobs(self) -> bool:
+        scorer = "keyword" if self.args.scorer == "keyword" else "llm"
+        
+        if scorer == "keyword":
+            print(f"\n[3/5] screening {len(self.jobs)} jobs (keyword stub — DEV ONLY)")
+            llm.keyword_screen(self.jobs, self.profile)
+        else:
+            try:
+                provider, model = resolve("screen")
+            except LLMError as e:
+                print(f"\n{e}\nNo key? Run with --scorer keyword for an offline dry run.")
+                return False
+                
+            print(f"\n[3/5] screening {len(self.jobs)} jobs via {provider.name}/{model}")
+            llm.screen(
+                self.jobs,
+                self.profile,
+                batch_size=int(self.cfg.get("screen_batch_size", 8)),
+                jd_chars=int(self.cfg.get("screen_jd_chars", 1400)),
+                provider=provider,
+                model=model,
+            )
+
+        if scorer == "llm" and not any(j.score is not None for j in self.jobs):
+            print(
+                "\n! screening scored nothing: every batch failed.\n"
+                "  Not recording these jobs, so the next run retries them.\n"
+                "  Check the warnings above (bad key, rate limit, wrong model id)."
+            )
+            return False
+
+        threshold = float(self.cfg.get("score_threshold", 7.0))
+        top_n = int(self.cfg.get("max_per_digest", 5))
+        self.shortlist = sorted(
+            [j for j in self.jobs if (j.score or 0) >= threshold],
+            key=lambda j: j.score or 0,
+            reverse=True,
+        )[:top_n]
+        print(f"  {len(self.shortlist)} scored >= {threshold}")
+        return True
+
+    def draft_responses(self) -> None:
+        print(f"\n[4/5] drafting kits for {len(self.shortlist)}")
+        scorer = "keyword" if self.args.scorer == "keyword" else "llm"
+        
+        if not self.shortlist:
+            print("  nothing cleared the threshold")
+            return
+            
+        if scorer == "keyword" or self.args.no_draft:
+            print("  skipped (keyword scorer / --no-draft)")
+            return
+
+        try:
+            provider, model = resolve("draft")
+            print(f"  via {provider.name}/{model}")
+            llm.draft(
+                self.shortlist,
+                self.profile,
+                jd_chars=int(self.cfg.get("draft_jd_chars", 6000)),
+                provider=provider,
+                model=model,
+            )
+            self._draft_latex(provider, model)
+        except LLMError as e:
+            print(f"  ! drafting unavailable: {e}")
+
+    def _draft_latex(self, provider, model) -> None:
+        ref_path = Path(self.cfg.get("resume_file", "JobHunt_Resume.tex"))
+        if not ref_path.exists():
+            print(f"  ! reference latex {ref_path} not found, skipping latex drafts")
+            return
+            
+        reference_tex = ref_path.read_text(encoding="utf-8")
+        out_dir = Path("out")
+        out_dir.mkdir(exist_ok=True)
+        import subprocess
+
+        for j in self.shortlist:
+            print(f"  drafting latex for {j.title} @ {j.company}...")
+            tex = llm.draft_latex(j, reference_tex, provider=provider, model=model)
+            if tex:
+                safe_name = f"{j.company}_{j.job_id}".replace(" ", "_").replace("/", "_")
+                tex_file = out_dir / f"{safe_name}.tex"
+                tex_file.write_text(tex, encoding="utf-8")
+                
+                res = subprocess.run(
+                    [
+                        "pdflatex",
+                        "-interaction=nonstopmode",
+                        f"-output-directory={out_dir}",
+                        str(tex_file),
+                    ],
+                    capture_output=True,
+                )
+                pdf_file = out_dir / f"{safe_name}.pdf"
+                if pdf_file.exists():
+                    self.attachments.append(pdf_file)
+                else:
+                    print(f"  ! failed to compile {tex_file.name}, attaching .tex instead")
+                    self.attachments.append(tex_file)
+
+    def finalize_digest(self) -> None:
+        print("\n[5/5] digest")
+        subject, doc = digest_mod.build(self.shortlist, self.scanned, self.candidates, self.store.stats())
+        path = digest_mod.write(doc, self.cfg.get("digest_file", "out/digest.html"))
+        print(f"  wrote {path}")
+
+        sent = False
+        if self.args.send:
+            try:
+                mailer.send(subject, doc, attachments=self.attachments)
+                sent = True
+            except Exception as e:
+                print(f"  ! email failed ({type(e).__name__}: {e}) — digest still on disk")
+        else:
+            print("  --send not passed, email skipped")
+
+        self.store.record(self.jobs, emailed=sent)
+        csv_path = self.store.export_csv(self.cfg.get("tracker_csv", "out/tracker.csv"))
+
+        print(
+            f"\nfunnel: {self.scanned} scanned -> {getattr(self, 'passed_filters', 0)} passed filters "
+            f"-> {self.candidates} new -> {len(self.shortlist)} in digest"
+        )
+        print(f"subject: {subject}")
+        print(f"tracker: {self.store.stats()}  ({csv_path})")
+
+
 def cmd_run(args) -> int:
     """Command to execute the daily pipeline of fetching, filtering, screening, and drafting."""
     cfg = _cfg(args.config)
     profile = _load_profile(cfg, allow_sample=args.mock)
     if profile is None:
         return 1
+    
     store = Store(cfg.get("seen_file", "seen.json"))
-    filters = cfg.get("filters", {}) or {}
-
-    print("\n[1/5] fetching boards")
-    if args.mock:
-        jobs = fetch_all_mock()
-    else:
-        companies = (
-            _cfg(cfg.get("companies_file", "companies.yaml")).get("companies") or []
-        )
-        if not companies:
-            print("companies.yaml has no entries")
-            return 1
-        jobs = fetch_all(companies)
-    scanned = len(jobs)
-    if not scanned:
-        print("no postings fetched — check the slugs in companies.yaml")
-        return 1
-
-    print("\n[2/5] filtering")
-    jobs = prefilter(jobs, filters)
-    passed_filters = len(jobs)
-    jobs = store.unseen(jobs)
-    print(f"  new since last run: {len(jobs)}")
-    candidates = len(jobs)
-    if args.limit:
-        jobs = jobs[: args.limit]
-        print(f"  --limit {args.limit} applied")
-
-    if not jobs:
-        subject, doc = digest_mod.build([], scanned, 0, store.stats())
-        path = digest_mod.write(doc, cfg.get("digest_file", "out/digest.html"))
-        print(f"\nnothing new today. preview: {path}")
-        return 0
-
-    scorer = "keyword" if args.scorer == "keyword" else "llm"
-    if scorer == "keyword":
-        print(f"\n[3/5] screening {len(jobs)} jobs (keyword stub — DEV ONLY)")
-        llm.keyword_screen(jobs, profile)
-    else:
-        try:
-            provider, model = resolve("screen")
-        except LLMError as e:
-            print(f"\n{e}\nNo key? Run with --scorer keyword for an offline dry run.")
-            return 1
-        print(f"\n[3/5] screening {len(jobs)} jobs via {provider.name}/{model}")
-        llm.screen(
-            jobs,
-            profile,
-            batch_size=int(cfg.get("screen_batch_size", 8)),
-            jd_chars=int(cfg.get("screen_jd_chars", 1400)),
-            provider=provider,
-            model=model,
-        )
-
-    if scorer == "llm" and not any(j.score is not None for j in jobs):
-        print(
-            "\n! screening scored nothing: every batch failed.\n"
-            "  Not recording these jobs, so the next run retries them.\n"
-            "  Check the warnings above (bad key, rate limit, wrong model id)."
-        )
-        return 1
-
-    threshold = float(cfg.get("score_threshold", 7.0))
-    top_n = int(cfg.get("max_per_digest", 5))
-    shortlist = sorted(
-        [j for j in jobs if (j.score or 0) >= threshold],
-        key=lambda j: j.score or 0,
-        reverse=True,
-    )[:top_n]
-    print(f"  {len(shortlist)} scored >= {threshold}")
-
-    print(f"\n[4/5] drafting kits for {len(shortlist)}")
-    attachments = []
-    if not shortlist:
-        print("  nothing cleared the threshold")
-    elif scorer == "keyword" or args.no_draft:
-        print("  skipped (keyword scorer / --no-draft)")
-    else:
-        try:
-            provider, model = resolve("draft")
-            print(f"  via {provider.name}/{model}")
-            llm.draft(
-                shortlist,
-                profile,
-                jd_chars=int(cfg.get("draft_jd_chars", 6000)),
-                provider=provider,
-                model=model,
-            )
-
-            ref_path = Path(cfg.get("resume_file", "JobHunt_Resume.tex"))
-            if ref_path.exists():
-                reference_tex = ref_path.read_text(encoding="utf-8")
-                out_dir = Path("out")
-                out_dir.mkdir(exist_ok=True)
-                import subprocess
-
-                for j in shortlist:
-                    print(f"  drafting latex for {j.title} @ {j.company}...")
-                    tex = llm.draft_latex(
-                        j, reference_tex, provider=provider, model=model
-                    )
-                    if tex:
-                        safe_name = f"{j.company}_{j.job_id}".replace(" ", "_").replace(
-                            "/", "_"
-                        )
-                        tex_file = out_dir / f"{safe_name}.tex"
-                        tex_file.write_text(tex, encoding="utf-8")
-                        res = subprocess.run(
-                            [
-                                "pdflatex",
-                                "-interaction=nonstopmode",
-                                f"-output-directory={out_dir}",
-                                str(tex_file),
-                            ],
-                            capture_output=True,
-                        )
-                        pdf_file = out_dir / f"{safe_name}.pdf"
-                        if pdf_file.exists():
-                            attachments.append(pdf_file)
-                        else:
-                            print(
-                                f"  ! failed to compile {tex_file.name}, attaching .tex instead"
-                            )
-                            attachments.append(tex_file)
-            else:
-                print(
-                    f"  ! reference latex {ref_path} not found, skipping latex drafts"
-                )
-
-        except LLMError as e:
-            print(f"  ! drafting unavailable: {e}")
-
-    print("\n[5/5] digest")
-    subject, doc = digest_mod.build(shortlist, scanned, candidates, store.stats())
-    path = digest_mod.write(doc, cfg.get("digest_file", "out/digest.html"))
-    print(f"  wrote {path}")
-
-    sent = False
-    if args.send:
-        try:
-            mailer.send(subject, doc, attachments=attachments)
-            sent = True
-        except Exception as e:  # bad app password, blocked port, offline
-            print(f"  ! email failed ({type(e).__name__}: {e}) — digest still on disk")
-    else:
-        print("  --send not passed, email skipped")
-
-    store.record(jobs, emailed=sent)
-    csv_path = store.export_csv(cfg.get("tracker_csv", "out/tracker.csv"))
-
-    print(
-        f"\nfunnel: {scanned} scanned -> {passed_filters} passed filters "
-        f"-> {candidates} new -> {len(shortlist)} in digest"
-    )
-    print(f"subject: {subject}")
-    print(f"tracker: {store.stats()}  ({csv_path})")
-    return 0
+    pipeline = JobPipeline(args, cfg, profile, store)
+    return pipeline.execute()
 
 
 def cmd_applied(args) -> int:

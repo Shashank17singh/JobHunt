@@ -1,3 +1,6 @@
+"""
+LLM prompts and business logic for resume parsing, job screening, and kit drafting.
+"""
 from __future__ import annotations
 
 import json

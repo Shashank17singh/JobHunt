@@ -1,8 +1,7 @@
-"""Parsers and prefilter tests against fixtures in their native ATS shapes.
-
-Validates parsing logic for Lever's epoch-milliseconds timestamps and regex matching for titles like `sde`.
 """
-
+Unit tests for ATS parsers (Greenhouse, Lever, Ashby) and pre-filtering logic.
+Verifies parsing of payloads, date formats, and HTML stripping.
+"""
 from __future__ import annotations
 
 import re
