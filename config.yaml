@@ -1,16 +1,7 @@
-# Core Pipeline Configuration
-#
-# Primary Application Settings
-#
-# The `filters` block establishes deterministic exclusion criteria to minimize LLM inference overhead.
-# By aggressively pre-filtering roles based on regex patterns, the pipeline achieves substantial
-# cost reductions (e.g., pruning 2,000 raw postings down to 40 candidates) before LLM scoring begins.
+# Core settings
 
 filters:
-  # Title Inclusion Patterns
-  # Regular expressions evaluated against the job title (case-insensitive).
-  # A posting is retained if its title matches at least one inclusion pattern AND zero exclusion patterns.
-  # Note: Use word boundaries (\b) to isolate specific acronyms (e.g., \bsde\b).
+  # Title Inclusion Patterns (regex, case-insensitive)
 
   include_titles:
     # --- Software / Backend / Systems Engineering ---
@@ -44,8 +35,7 @@ filters:
     - '\btrainee\b'
     - '\bapprentice\b'
 
-  # Title Exclusion Patterns
-  # Postings matching any of these patterns will be immediately discarded, superseding any inclusion matches.
+  # Title Exclusion Patterns (overrides inclusion)
   exclude_titles:
     - '\b(staff|principal|distinguished|fellow|architect)\b'      # Exceeds target seniority threshold
     - '\bsenior\b'
@@ -55,9 +45,7 @@ filters:
     # Note: data scientist / ML scientist are NOT excluded — they match
     # Shashank's ML/DS training, certifications, and NIELIT capstone.
 
-  # Location Constraints
-  # Substrings evaluated against the combined string "<location> <title>" (case-insensitive).
-  # Leaving this array empty bypasses location filtering.
+  # Location Constraints (matched against "<location> <title>")
   locations:
     - bangalore
     - bengaluru
@@ -71,12 +59,9 @@ filters:
     - pune
     - india
 
-  # If enabled, roles explicitly designated as "remote" will bypass standard location constraints.
   allow_remote: true
 
-  # Maximum Age Threshold
-  # Discards postings older than the specified duration in days. Set to null to disable.
-  # Note: This is a best-effort metric as ATS platforms frequently update timestamps arbitrarily.
+  # Drop postings older than this (days). Set to null to disable.
   max_age_days: 30
 
 # --- LLM Processing Settings --------------------------------------------------

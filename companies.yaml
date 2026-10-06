@@ -1,13 +1,4 @@
-# Target Job Boards Configuration
-#
-# Schema:
-#   ats:   The Applicant Tracking System platform in use (greenhouse | lever | ashby).
-#   slug:  The unique board identifier for the company's ATS instance.
-#   name:  The display name to render in the output digest.
-#
-# Error Handling:
-# Invalid slugs will gracefully return an empty array rather than terminating the pipeline.
-# Monitor the stdout logs during execution to identify and resolve consistently failing slugs.
+# Target Job Boards
 
 companies:
 # --- Startups & Practical-Interview Companies ---

@@ -128,7 +128,6 @@ DEFAULT_MODELS = {
 
 
 def get_provider(name: str) -> Provider:
-    """Instantiates a provider by name."""
     try:
         return PROVIDERS[name]()
     except KeyError:
@@ -138,7 +137,6 @@ def get_provider(name: str) -> Provider:
 
 
 def resolve(stage: str, check: bool = True) -> tuple[Provider, str]:
-    """Resolves the provider and model configured for a given pipeline stage."""
     name = (
         (
             os.getenv(f"{stage.upper()}_PROVIDER")

@@ -1,3 +1,7 @@
+"""
+Automates git history rewriting to bulk-update commit authors.
+Uses interactive rebase and sequence editor injection to process the entire tree.
+"""
 import os
 import subprocess
 import time

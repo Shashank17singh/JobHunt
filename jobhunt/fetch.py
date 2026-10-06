@@ -1,3 +1,7 @@
+"""
+ATS scraping and job object definitions.
+Fetches open roles from Greenhouse, Lever, and Ashby APIs.
+"""
 from __future__ import annotations
 
 import html

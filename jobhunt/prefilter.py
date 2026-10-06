@@ -1,3 +1,7 @@
+"""
+Fast, deterministic pre-filtering of jobs before sending them to the LLM.
+Filters out roles by title, location, or staleness.
+"""
 from __future__ import annotations
 
 import re

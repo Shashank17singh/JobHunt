@@ -1,3 +1,7 @@
+"""
+Script used as a sequence editor for git rebase interactive.
+Converts 'pick' commands to 'edit' commands automatically.
+"""
 import sys
 
 
