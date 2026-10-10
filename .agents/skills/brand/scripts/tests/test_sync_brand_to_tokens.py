@@ -34,7 +34,7 @@ def test_sync_parses_bundled_starter_template(tmp_path):
     shutil.copy(BRAND_STARTER, tmp_path / "docs" / "brand-guidelines.md")
     shutil.copy(TOKENS_STARTER, tmp_path / "assets" / "design-tokens.json")
 
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: PLW1510
         [node, str(SCRIPT)],
         cwd=tmp_path,
         capture_output=True,

@@ -100,7 +100,7 @@ def build(
     jobs: list[Job], scanned: int, candidates: int, stats: dict
 ) -> tuple[str, str]:
     """Builds the complete HTML digest for the daily run."""
-    today = datetime.now().strftime("%d %b %Y")
+    today = datetime.now().strftime("%d %b %Y")  # noqa: DTZ005
     subject = (
         f"{len(jobs)} job{'s' if len(jobs) != 1 else ''} worth your time — {today}"
         if jobs

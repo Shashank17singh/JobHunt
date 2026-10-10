@@ -95,7 +95,7 @@ def build_profile(
 
     profile = parse_json(raw)
     if not isinstance(profile, dict):
-        raise ValueError("profile extraction did not return a JSON object")
+        raise ValueError("profile extraction did not return a JSON object")  # noqa: TRY004
     return profile
 
 
@@ -230,7 +230,7 @@ def draft(
             )
             kit = parse_json(raw)
             if not isinstance(kit, dict):
-                raise ValueError("draft did not return a JSON object")
+                raise ValueError("draft did not return a JSON object")  # noqa: TRY004
             j.draft = {
                 "fit_summary": str(kit.get("fit_summary") or ""),
                 "required_skills": [str(s) for s in (kit.get("required_skills") or [])],
@@ -318,6 +318,6 @@ def draft_latex(
         cleaned = re.sub(r"^\s*```(?:latex|tex)?\s*", "", raw, flags=re.MULTILINE)
         cleaned = re.sub(r"\s*```\s*$", "", cleaned, flags=re.MULTILINE)
         return cleaned.strip()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"  ! latex draft failed for {job.job_id} ({type(e).__name__}: {e})")
         return None

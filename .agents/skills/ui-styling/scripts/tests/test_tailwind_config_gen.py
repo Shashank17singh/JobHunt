@@ -223,7 +223,7 @@ class TestTailwindConfigGenerator:
     def test_validate_config_valid(self):
         """Test validating valid configuration."""
         generator = TailwindConfigGenerator()
-        valid, message = generator.validate_config()
+        valid, _message = generator.validate_config()
 
         assert valid is True
 
@@ -376,7 +376,7 @@ class TestGeneratedConfigIsValidJs:
         path = tmp_path / "config.cjs"
         path.write_text(snippet)
 
-        result = subprocess.run(
+        result = subprocess.run(  # noqa: PLW1510
             [node, "--check", str(path)], capture_output=True, text=True
         )
         assert result.returncode == 0, result.stderr

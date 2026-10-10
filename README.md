@@ -36,9 +36,9 @@ graph TD
     end
 
     subgraph "3. LLM Pipeline"
-    F --> G[Screening Model: Gemini 3.6 Flash]
+    F --> G[Screening Model: Gemini 3.8 Flash]
     G -->|Threshold Check| H{Score >= 7.0?}
-    H -->|Yes| I[Drafting Model: Gemini 3.6 Flash]
+    H -->|Yes| I[Drafting Model: Gemini 3.8 Flash]
     I -->|Tailored Kit| J[Digest Builder]
     end
 

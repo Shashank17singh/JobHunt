@@ -27,7 +27,7 @@ def main():
     else:
         cmd = [sys.executable, str(UNIFIED_VALIDATOR)] + args
 
-    result = subprocess.run(cmd)
+    result = subprocess.run(cmd)  # noqa: PLW1510
     sys.exit(result.returncode)
 
 

@@ -70,7 +70,7 @@ def parse_decision_rules(raw):
     except json.JSONDecodeError as error:
         raise ValueError(f"invalid decision-rule JSON: {error}") from error
     if not isinstance(rules, dict):
-        raise ValueError("decision rules must be a JSON object")
+        raise ValueError("decision rules must be a JSON object")  # noqa: TRY004
     for condition, actions in rules.items():
         if condition not in ALLOWED_CONDITIONS:
             raise ValueError(f"unknown decision-rule condition: {condition}")
