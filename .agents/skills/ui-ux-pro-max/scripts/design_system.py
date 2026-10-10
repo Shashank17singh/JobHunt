@@ -315,7 +315,7 @@ def _derive_dark_palette(palette: dict) -> dict:
     return derived
 
 
-def _select_palette_for_mode(palettes: list, mode: str, category: str = None) -> dict:
+def _select_palette_for_mode(palettes: list, mode: str, category: str | None = None) -> dict:
     """Pick the highest-ranked palette matching the resolved mode.
 
     Only the dark case filters. Light is left on the existing "top hit wins"
@@ -414,7 +414,7 @@ class DesignSystemGenerator:
         return style
 
     def _multi_domain_search(
-        self, query: str, category: str, reasoning: dict, style_priority: list = None
+        self, query: str, category: str, reasoning: dict, style_priority: list | None = None
     ) -> dict:
         """Execute searches across multiple domains."""
         results = {}
@@ -556,10 +556,10 @@ class DesignSystemGenerator:
     def generate(
         self,
         query: str,
-        project_name: str = None,
-        variance: int = None,
-        motion: int = None,
-        density: int = None,
+        project_name: str | None = None,
+        variance: int | None = None,
+        motion: int | None = None,
+        density: int | None = None,
     ) -> dict:
         """Generate complete design system recommendation.
 
@@ -1122,14 +1122,14 @@ def format_markdown(design_system: dict) -> str:
 # ============ MAIN ENTRY POINT ============
 def generate_design_system(
     query: str,
-    project_name: str = None,
+    project_name: str | None = None,
     output_format: str = "ascii",
     persist: bool = False,
-    page: str = None,
-    output_dir: str = None,
-    variance: int = None,
-    motion: int = None,
-    density: int = None,
+    page: str | None = None,
+    output_dir: str | None = None,
+    variance: int | None = None,
+    motion: int | None = None,
+    density: int | None = None,
     force: bool = False,
 ) -> dict:
     """
@@ -1219,9 +1219,9 @@ def _write_persisted_file(path: Path, content: str, force: bool) -> None:
 
 def persist_design_system(
     design_system: dict,
-    page: str = None,
-    output_dir: str = None,
-    page_query: str = None,
+    page: str | None = None,
+    output_dir: str | None = None,
+    page_query: str | None = None,
     force: bool = False,
 ) -> dict:
     """
@@ -1316,7 +1316,7 @@ def format_master_md(design_system: dict) -> str:
     motion_snippet = design_system.get("motion_snippet", {})
     spacing_scale = design_system.get("spacing_scale")
 
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # noqa: DTZ005
 
     lines = []
 
@@ -1644,11 +1644,11 @@ def format_master_md(design_system: dict) -> str:
 
 
 def format_page_override_md(
-    design_system: dict, page_name: str, page_query: str = None
+    design_system: dict, page_name: str, page_query: str | None = None
 ) -> str:
     """Format a page-specific override file with intelligent AI-generated content."""
     project = design_system.get("project_name", "PROJECT")
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # noqa: DTZ005
     page_title = page_name.replace("-", " ").replace("_", " ").title()
 
     # Detect page type and generate intelligent overrides
@@ -1800,9 +1800,9 @@ def _generate_intelligent_overrides(
     # Extract style-based overrides
     if style_results:
         style = style_results[0]
-        style_name = style.get("Style Category", "")
+        style.get("Style Category", "")
         keywords = style.get("Keywords", "")
-        best_for = style.get("Best For", "")
+        style.get("Best For", "")
         effects = style.get("Effects & Animation", "")
 
         # Infer layout from style keywords
@@ -1921,7 +1921,7 @@ def _detect_page_type(context: str, style_results: list) -> str:
 
     # Fallback: try to infer from style results
     if style_results:
-        style_name = style_results[0].get("Style Category", "").lower()
+        style_results[0].get("Style Category", "").lower()
         best_for = style_results[0].get("Best For", "").lower()
 
         if "dashboard" in best_for or "data" in best_for:

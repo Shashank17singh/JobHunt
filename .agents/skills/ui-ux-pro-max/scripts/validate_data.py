@@ -243,7 +243,7 @@ def _split(value, delimiter):
 
 def _valid_date(value):
     try:
-        return date.fromisoformat(value) <= date.today()
+        return date.fromisoformat(value) <= date.today()  # noqa: DTZ011
     except (TypeError, ValueError):
         return False
 
@@ -582,7 +582,7 @@ def _load_catalog_json(name, problems):
 def _catalog_date(value):
     try:
         parsed = date.fromisoformat(value)
-        return parsed.year > 1970 and parsed <= date.today()
+        return parsed.year > 1970 and parsed <= date.today()  # noqa: DTZ011
     except (TypeError, ValueError):
         return False
 

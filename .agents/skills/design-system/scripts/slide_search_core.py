@@ -452,10 +452,7 @@ def calculate_pattern_break(slide_index, total_slides, previous_emotion=None):
         "fear": ["hope", "relief"],
     }
 
-    if previous_emotion in contrasting_emotions:
-        return True
-
-    return False
+    return previous_emotion in contrasting_emotions
 
 
 def search_with_context(query, slide_position=1, total_slides=9, previous_emotion=None):

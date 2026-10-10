@@ -278,7 +278,7 @@ def generate_icon(
 
         # Determine output path
         if output_path is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # noqa: DTZ005
             slug = name or prompt.split()[0] if prompt else "icon"
             slug = re.sub(r"[^a-zA-Z0-9_-]", "_", slug.lower())
             style_suffix = f"_{style}" if style else ""
@@ -291,7 +291,7 @@ def generate_icon(
         print(f"Icon saved to: {output_path}")
         return output_path
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Error generating icon: {e}")
         return None
 
@@ -377,7 +377,7 @@ def generate_batch(
 
         return results
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Error generating icons: {e}")
         return []
 

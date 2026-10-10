@@ -21,7 +21,7 @@ def _run(tmp_path: Path, css: str) -> subprocess.CompletedProcess:
     if not node:
         pytest.skip("node not available")
     (tmp_path / "sample.css").write_text(css)
-    return subprocess.run(
+    return subprocess.run(  # noqa: PLW1510
         [node, str(SCRIPT), "--dir", str(tmp_path)],
         capture_output=True,
         text=True,

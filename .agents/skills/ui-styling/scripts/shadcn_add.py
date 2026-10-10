@@ -106,8 +106,8 @@ class ShadcnInstaller:
         if already_installed and not overwrite:
             return (
                 False,
-                f"Components already installed: {', '.join(already_installed)}. "
-                "Use --overwrite to reinstall",
+                (f"Components already installed: {', '.join(already_installed)}. "
+                "Use --overwrite to reinstall"),
             )
 
         # Build command

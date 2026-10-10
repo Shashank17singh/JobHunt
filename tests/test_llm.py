@@ -143,8 +143,10 @@ def test_draft_truncates_at_a_larger_limit():
     jobs = make_jobs(1, desc="y" * 20000)
     stub = StubProvider(
         [
-            '{"fit_summary":"ok","tailored_bullets":[],"gaps":[],'
-            '"cover_note":"","questions_to_ask":[]}'
+            (
+                '{"fit_summary":"ok","tailored_bullets":[],"gaps":[],'
+                '"cover_note":"","questions_to_ask":[]}'
+            )
         ]
     )
 
@@ -216,9 +218,11 @@ def test_fenced_reply_with_preamble_still_scores(capsys):
     jobs = make_jobs(1)
     stub = StubProvider(
         [
-            "Sure! Here are the scores:\n```json\n"
-            f'[{{"job_id": "{jobs[0].job_id}", "score": 8.5, "reason": "strong Go match"}}]'
-            "\n```"
+            (
+                "Sure! Here are the scores:\n```json\n"
+                f'[{{"job_id": "{jobs[0].job_id}", "score": 8.5, "reason": "strong Go match"}}]'
+                "\n```"
+            )
         ]
     )
     llm.screen(jobs, PROFILE, batch_size=8, provider=stub, model="m")
@@ -343,16 +347,16 @@ def test_stage_provider_overrides_the_global_one(clean_env):
 
     assert screen_p.name == "openai-compatible"
     assert draft_p.name == "gemini"
-    assert draft_m == "gemini-3.6-flash"
+    assert draft_m == "gemini-3.8-flash"
     assert screen_m == "gpt-4o-mini"
 
 
 def test_explicit_model_wins_over_the_default(clean_env):
     clean_env.setenv("LLM_PROVIDER", "gemini")
     clean_env.setenv("GEMINI_API_KEY", "sk-gemini-test")
-    clean_env.setenv("SCREEN_MODEL", "gemini-3.6-flash")
-    p, model = providers.resolve("screen")
-    assert model == "gemini-3.6-flash"
+    clean_env.setenv("SCREEN_MODEL", "gemini-3.8-flash")
+    _p, model = providers.resolve("screen")
+    assert model == "gemini-3.8-flash"
 
 
 def test_missing_key_fails_at_resolve_not_on_the_first_batch(clean_env):

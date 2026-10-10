@@ -209,7 +209,7 @@ def generate_logo(
         # Extract image from response
         image_data = None
         for part in response.candidates[0].content.parts:
-            if hasattr(part, "inline_data") and part.inline_data:
+            if hasattr(part, "inline_data") and part.inline_data:  # noqa: SIM102
                 if part.inline_data.mime_type.startswith("image/"):
                     image_data = part.inline_data.data
                     break
@@ -223,7 +223,7 @@ def generate_logo(
 
         # Determine output path
         if output_path is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # noqa: DTZ005
             brand_slug = brand_name.lower().replace(" ", "_") if brand_name else "logo"
             output_path = f"{brand_slug}_{timestamp}.png"
 
@@ -234,7 +234,7 @@ def generate_logo(
         print(f"Logo saved to: {output_path}")
         return output_path
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Error generating logo: {e}")
         return None
 

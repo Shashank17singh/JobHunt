@@ -60,7 +60,7 @@ def load_logo_image(logo_path):
         elif img.mode != "RGB":
             img = img.convert("RGB")
         return img
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Error loading logo: {e}")
         return None
 
@@ -135,7 +135,7 @@ def build_cip_prompt(
     # Build prompt components
     deliverable_name = deliverable_data.get("Deliverable", deliverable)
     description = deliverable_data.get("Description", "")
-    dimensions = deliverable_data.get("Dimensions", "")
+    deliverable_data.get("Dimensions", "")
     logo_placement = deliverable_data.get("Logo Placement", "center")
 
     style_name = style_data.get("Style Name", style or "corporate")
@@ -282,7 +282,7 @@ def generate_with_nano_banana(
                     output_dir = Path(output_dir)
                     output_dir.mkdir(parents=True, exist_ok=True)
 
-                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  # noqa: DTZ005
                     brand_slug = prompt_data["brand"].lower().replace(" ", "-")
                     deliverable_slug = (
                         prompt_data["deliverable"].lower().replace(" ", "-")
@@ -300,7 +300,7 @@ def generate_with_nano_banana(
         print("No image generated in response")
         return None
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Error generating image: {e}")
         return None
 

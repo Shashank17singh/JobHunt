@@ -18,7 +18,7 @@ def main():
     p.wait()
 
     while True:
-        res = subprocess.run(["git", "status"], capture_output=True, text=True)
+        res = subprocess.run(["git", "status"], capture_output=True, text=True)  # noqa: PLW1510
         if (
             "interactive rebase in progress" not in res.stdout.lower()
             and "rebase in progress" not in res.stdout.lower()
@@ -27,7 +27,7 @@ def main():
             break
 
         print("Amending commit...")
-        subprocess.run(
+        subprocess.run(  # noqa: PLW1510
             [
                 "git",
                 "commit",
@@ -39,7 +39,7 @@ def main():
         )
 
         print("Continuing rebase...")
-        subprocess.run(["git", "rebase", "--continue"], env=env)
+        subprocess.run(["git", "rebase", "--continue"], env=env)  # noqa: PLW1510
 
         time.sleep(0.5)
 

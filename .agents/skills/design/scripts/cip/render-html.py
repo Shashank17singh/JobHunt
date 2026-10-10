@@ -98,7 +98,7 @@ def get_image_base64(image_path):
     try:
         with open(image_path, "rb") as f:
             return base64.b64encode(f.read()).decode("utf-8")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Warning: Could not load image {image_path}: {e}")
         return None
 
@@ -376,7 +376,7 @@ def generate_html(brand_name, industry, images_dir, output_path=None, style=None
     </footer>
 </body>
 </html>
-""")
+""")  # noqa: DTZ005
 
     html_content = "".join(html_parts)
 

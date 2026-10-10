@@ -442,7 +442,7 @@ def generate_title_slide(data):
             <span>{_e(data.get("date", datetime.now().strftime("%B %Y")))}</span>
         </div>
     </section>
-    """
+    """  # noqa: DTZ005
 
 
 def generate_problem_slide(data):
@@ -765,7 +765,7 @@ def main():
 
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         output_path = (
-            OUTPUT_DIR / f"demo-pitch-{datetime.now().strftime('%y%m%d')}.html"
+            OUTPUT_DIR / f"demo-pitch-{datetime.now().strftime('%y%m%d')}.html"  # noqa: DTZ005
         )
         output_path.write_text(html, encoding="utf-8")
         print(f"Demo deck generated: {output_path}")
@@ -779,7 +779,7 @@ def main():
         output_path = (
             Path(args.output)
             if args.output
-            else OUTPUT_DIR / f"deck-{datetime.now().strftime('%y%m%d-%H%M')}.html"
+            else OUTPUT_DIR / f"deck-{datetime.now().strftime('%y%m%d-%H%M')}.html"  # noqa: DTZ005
         )
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(html, encoding="utf-8")

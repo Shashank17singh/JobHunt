@@ -205,7 +205,7 @@ class TestSearchDomains(unittest.TestCase):
         self.assertEqual(result["diagnostics"]["reason"], "unsupported-library")
 
     def test_every_configured_domain_file_exists_and_is_searchable(self):
-        for domain, config in CSV_CONFIG.items():
+        for domain in CSV_CONFIG:
             with self.subTest(domain=domain):
                 result = search("design", domain=domain, max_results=1)
                 self.assertNotIn(

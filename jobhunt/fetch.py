@@ -166,7 +166,7 @@ def fetch_board(
             print(f"  ! {ats}/{slug} -> HTTP {r.status_code}")
             return []
         return parser(slug, company or slug, r.json())
-    except Exception as e:  # Catch network errors, dead slugs, or rate limits
+    except Exception as e:  # Catch network errors, dead slugs, or rate limits  # noqa: BLE001
         print(f"  ! {ats}/{slug} -> {type(e).__name__}: {e}")
         return []
 

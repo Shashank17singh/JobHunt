@@ -154,7 +154,7 @@ class JobPipeline:
         return bool(self.jobs)
 
     def generate_empty_digest(self) -> None:
-        subject, doc = digest_mod.build([], self.scanned, 0, self.store.stats())
+        _subject, doc = digest_mod.build([], self.scanned, 0, self.store.stats())
         path = digest_mod.write(doc, self.cfg.get("digest_file", "out/digest.html"))
         print(f"\nnothing new today. preview: {path}")
 
@@ -244,7 +244,7 @@ class JobPipeline:
                 tex_file = out_dir / f"{safe_name}.tex"
                 tex_file.write_text(tex, encoding="utf-8")
                 
-                res = subprocess.run(
+                subprocess.run(  # noqa: PLW1510
                     [
                         "pdflatex",
                         "-interaction=nonstopmode",
@@ -271,7 +271,7 @@ class JobPipeline:
             try:
                 mailer.send(subject, doc, attachments=self.attachments)
                 sent = True
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 print(f"  ! email failed ({type(e).__name__}: {e}) — digest still on disk")
         else:
             print("  --send not passed, email skipped")

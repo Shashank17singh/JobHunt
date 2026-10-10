@@ -24,7 +24,7 @@ def _parse_date(value: str | None) -> datetime | None:
     v = value.replace("Z", "+00:00")
     for fmt in (None, "%Y-%m-%d", "%Y-%m-%dT%H:%M:%S"):
         try:
-            dt = datetime.fromisoformat(v) if fmt is None else datetime.strptime(v, fmt)
+            dt = datetime.fromisoformat(v) if fmt is None else datetime.strptime(v, fmt)  # noqa: DTZ007
             return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
         except ValueError:
             continue
