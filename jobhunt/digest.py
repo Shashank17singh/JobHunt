@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import html
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from .fetch import Job
@@ -100,7 +100,7 @@ def build(
     jobs: list[Job], scanned: int, candidates: int, stats: dict
 ) -> tuple[str, str]:
     """Builds the complete HTML digest for the daily run."""
-    today = datetime.now().strftime("%d %b %Y")  # noqa: DTZ005
+    today = datetime.now(timezone.utc).strftime("%d %b %Y")
     subject = (
         f"{len(jobs)} job{'s' if len(jobs) != 1 else ''} worth your time — {today}"
         if jobs

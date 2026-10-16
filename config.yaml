@@ -42,6 +42,7 @@ filters:
     - '\b(director|vp|vice president|head of|chief|cto)\b'
     - '\b(manager|management)\b'
     - '\b(sales|account executive|marketing|recruit|support|success)\b'
+    - '\b(frontend|front-end|ios|android|mobile|game|designer)\b'      # Wrong discipline
     # Note: data scientist / ML scientist are NOT excluded — they match
     # Shashank's ML/DS training, certifications, and NIELIT capstone.
 
