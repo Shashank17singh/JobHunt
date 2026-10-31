@@ -37,3 +37,7 @@ env/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local AI assistant configuration
+.agents/
+.claude/
