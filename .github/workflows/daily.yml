@@ -24,7 +24,7 @@ permissions:
 jobs:
   digest:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 70  # two 20-minute attempts and the wait between them
 
     steps:
       - uses: actions/checkout@v4
@@ -79,11 +79,16 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
         run: |
+          flags="--send"
           if [ "${{ inputs.dry_run }}" = "true" ]; then
-            python -m jobhunt run
-          else
-            python -m jobhunt run --send
+            flags=""
           fi
+          # Gemini outages outlast the client's own retries. A failed run has
+          # emailed nothing and recorded nothing, so a later attempt is safe.
+          python -m jobhunt run $flags && exit 0
+          echo "::warning::The first attempt failed, trying again in 30 minutes."
+          sleep 1800
+          python -m jobhunt run $flags
 
       - name: Upload digest
         if: always()
