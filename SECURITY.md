@@ -1,9 +1,9 @@
-﻿# Security Policy
+# Security Policy
 
 ## Supported Versions
 
-Only the latest main branch is currently supported with security updates.
+Only the latest version on the default branch receives security fixes.
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within this project, please open an issue privately or contact the repository owner directly. Do not disclose vulnerabilities publicly until they have been patched.
+Please do not open a public issue. Report it privately from this repository's **Security** tab by choosing **Report a vulnerability**.

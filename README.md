@@ -64,8 +64,8 @@ graph TD
 
 - **Multi-ATS Integration**: Natively parses Greenhouse, Lever, and Ashby JSON endpoints, normalising different schemas, timezone bugs, and HTML-escaping quirks.
 - **Two-Stage LLM Routing**:
-  - _Stage 1 (Screening)_: Uses a fast, cheap model (e.g., Gemini 3.6 Flash) to batch-score jobs out of 10 based on strict seniority and skill alignment.
-  - _Stage 2 (Drafting)_: Uses a highly capable model (e.g., Gemini 3.6 Flash) to generate 150-word cover letters, tailored resume bullets, and interview questions exclusively for top-scoring roles.
+  - _Stage 1 (Screening)_: Uses a fast, cheap model (e.g., Gemini 3.8 Flash) to batch-score jobs out of 10 based on strict seniority and skill alignment.
+  - _Stage 2 (Drafting)_: Uses the drafting model (e.g., Gemini 3.8 Flash) to generate 150-word cover letters, tailored resume bullets, and interview questions exclusively for top-scoring roles.
 - **Cost-Optimized Determinism**: Uses regex rules (`config.yaml`) to drop wrong seniority, functions, and locations before a single token is spent, keeping running costs below ₹5/day.
 - **Local JSON Storage**: Maintains a local `seen.json` state to ensure jobs are never evaluated twice.
 - **GitHub Actions Automation**: Designed to run statelessly on a cron schedule using GitHub Actions cache to persist the tracking store.
