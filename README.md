@@ -1,16 +1,6 @@
-<div align="center">
+# JobHunt
 
-# JobHunt - AI Job-Search Agent
-
-**An automated, agentic job-search pipeline that pulls from ATS boards, prefilters noise, scores matches against your resume using LLMs, and drafts tailored cover letters.**
-
-[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-LLM%20Screening%20%26%20Drafting-8E75B2?style=for-the-badge&logo=google&logoColor=white)](https://aistudio.google.com/)
-[![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Automation-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/features/actions)
-
-</div>
-
----
+An automated, agentic job-search pipeline that pulls from ATS boards, prefilters noise, scores matches against your resume using LLMs, and drafts tailored cover letters.
 
 ## Overview
 
