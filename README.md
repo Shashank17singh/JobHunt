@@ -198,10 +198,10 @@ JobHunt is designed to execute as an automated headless cron task on GitHub Acti
 
 ---
 
-## Known Limitations
+## Operational Considerations & Limitations
 
-- Private or authenticated ATS portals (e.g. Workday, Taleo) without public REST endpoints are not supported.
-- Free-tier Gemini API usage is subject to rate limiting during high-volume batch crawls; `--limit` should be used when processing newly added bulk companies.
+- **Public ATS Scope**: Ingestion focuses on publicly discoverable career portals and structured ATS endpoints (e.g., Greenhouse, Lever, Ashby); enterprise portals behind corporate single sign-on require authenticated connectors.
+- **Rate Limiting & Concurrency**: Bulk batch crawls against frontier LLM APIs should apply the `--limit` flag and configured worker delays to stay within provider quota thresholds.
 
 ---
 
